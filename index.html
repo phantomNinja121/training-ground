@@ -406,7 +406,7 @@
 /* ============================================================
    1. VERSION + CONFIG — the Firebase config is read from config.js (see SETUP.md), never pasted here.
    ============================================================ */
-const APP_VERSION = "2026-09-09.1";
+const APP_VERSION = "2026-09-09.2";
 const firebaseConfig = window.firebaseConfig || null;
 // The family code is the password: it's the Firestore record name, it's never written into this file, and it only travels in the link you share.
 const mem = {};
@@ -1112,7 +1112,7 @@ function vNext() {
   if (!c && vs.mode === "trouble") { f.innerHTML = '<div class="kind">Trouble words</div><div class="word">Been through them all</div><p class="def">Every trouble word has had a turn this session.</p><div class="spacer"></div><button class="btn" id="vMore" type="button">Go through them again</button>'; $("vMore").onclick = () => { vs.seenSet = new Set(); vNext(); }; return; }
   if (!c) { f.innerHTML = '<div class="kind">Deck</div><div class="word">All caught up</div><p class="def">Nothing is due and today\'s new words are done.</p><div class="spacer"></div><button class="btn" id="vMore" type="button">Learn extra new words</button>'; $("vMore").onclick = () => { vs.extra = true; vNext(); }; return; }
   if (c.wait) { const secs = Math.ceil(c.wait / 1000); f.innerHTML = '<div class="kind learn">Learning</div><div class="word">' + c.w.w + '</div><p class="def">Comes back in ' + (secs < 60 ? secs + "s" : Math.ceil(secs / 60) + " min") + '.</p><div class="spacer"></div><button class="btn quiet" id="vMore" type="button">Learn extra new words instead</button>'; $("vMore").onclick = () => { vs.extra = true; vNext(); }; return; }
-  const kindLbl = { due: "Review", learn: "Learning", new: "New word · " + c.w.g, trouble: "Trouble word · missed " + (vcards()[c.w.w].lapses || 0) + "×" }[c.kind];
+  const kindLbl = c.kind === "due" ? "Review" : c.kind === "learn" ? "Learning" : c.kind === "new" ? "New word · " + c.w.g : "Trouble word · missed " + ((vcards()[c.w.w] || {}).lapses || 0) + "×";
   f.innerHTML = '<div class="kind ' + c.kind + '">' + kindLbl + '</div><div class="word">' + c.w.w + '</div><div class="pos">' + c.w.pos + '</div><div class="spacer"></div><button class="btn" id="vShow" type="button">Show meaning</button>';
   $("vShow").onclick = vShow;
 }
