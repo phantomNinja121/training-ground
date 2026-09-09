@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Training Ground">
+<meta name="theme-color" content="#FFFFFF">
+<title>Training Ground · ISEE Prep</title>
+<style>
+  :root {
+    /* Brand palette + white */
+    --black: #2C3436; --light-blue: #76B8F9; --blue: #4081DB; --light-red: #F3B0A0; --red: #D1755C;
+    --light-green: #9DEAC7; --green: #52B495; --light-yellow: #FAEAAD; --yellow: #F3CA7A;
+    --light-turq: #81EBEB; --turq: #5DCAC6; --light-purple: #9F98F7; --purple: #675DDD; --pink: #D54D8E;
+    --light-gray: #B4BEC0; --mid-gray: #8B9597; --dark-gray: #646E70; --bg: #CBE2FC; --white: #FFFFFF;
+    --font: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--white); color: var(--black); font-family: var(--font); font-size: 15px; }
+  body { min-height: 100vh; padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  button { font-family: inherit; cursor: pointer; color: inherit; }
+  input { font-family: inherit; font-size: 16px; }
+  svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.15em; }
+  .app { max-width: 480px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top)) 20px 0; position: relative; }
+
+  /* leaf in the corner */
+  .app > section { position: relative; z-index: 1; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--green); margin: 22px 0 4px 0; letter-spacing: -.01em; }
+  .sub { color: var(--dark-gray); font-size: 14px; margin: 0 0 18px 0; line-height: 1.4; }
+  h2 { font-size: 15px; font-weight: 600; color: var(--black); margin: 22px 0 10px; }
+  h2 span, h2#pitchDate { font-weight: 400; color: var(--mid-gray); }
+
+  /* stat strip */
+  .stats { display: flex; background: var(--bg); border-radius: 14px; padding: 8px 6px; margin-bottom: 16px; }
+  .stat { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px; min-height: 44px; }
+  .stat + .stat { border-left: 1.5px solid rgba(255,255,255,.9); }
+  .stat .big { font-size: 19px; font-weight: 700; line-height: 1.1; letter-spacing: -.01em; color: var(--black); }
+  .stat .lbl { font-size: 11px; color: var(--dark-gray); }
+  .flamebox { height: 22px; display: flex; align-items: flex-end; }
+  button.stat { background: transparent; border: 0; padding: 0; font: inherit; }
+  .fdots { display: flex; gap: 3px; margin-top: 2px; height: 14px; align-items: center; }
+  .fdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--white); }
+  .fdots i.on { background: var(--green); }
+  .fdots .bonus { font-size: 11px; font-weight: 700; color: var(--black); background: var(--light-green); border-radius: 999px; padding: 1px 7px; }
+  .pop.forminfo .title { font-size: 26px; color: var(--black); }
+  /* the pitch */
+  .pitch { margin: 4px 0 18px; }
+  .pitch svg { width: 100%; height: auto; display: block; border-radius: 16px; }
+  .pitch .player { transition: transform .55s cubic-bezier(.3,1.1,.4,1); }
+  .pitch .ball { transition: transform .55s cubic-bezier(.3,1.1,.4,1); }
+  .pitch.shoot .ball { animation: shot .7s cubic-bezier(.2,.8,.3,1) forwards; }
+  @keyframes shot { 50% { transform: translate(318px, -14px); } to { transform: translate(330px, -6px); } }
+  .pitch .net { transform-box: view-box; transform-origin: 330px 65px; }
+  .pitch.shoot .net { animation: bulge .5s ease .5s both; }
+  @keyframes bulge { 0% { transform: scaleX(1); } 50% { transform: scaleX(1.3); } 100% { transform: scaleX(1.12); } }
+  .pitch .goaltxt { opacity: 0; }
+  .pitch.shoot .goaltxt { animation: goaltxt 2.6s ease both; }
+  @keyframes goaltxt { 0%, 25% { opacity: 0; } 35%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  .pitch.scored .ball { transform: translate(330px, -6px); }
+  .pitch.scored .net { transform: scaleX(1.12); }
+  .pitch .steps { font-size: 12px; color: var(--dark-gray); text-align: center; margin-top: 6px; }
+  /* weekly match on the season tab */
+  .scoreline { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .scoreline .team { flex: 1; font-weight: 600; font-size: 14px; }
+  .scoreline .team.r { text-align: right; }
+  .scoreline .score { font-size: 34px; font-weight: 800; letter-spacing: -.02em; background: var(--black); color: var(--white); border-radius: 12px; padding: 4px 14px; white-space: nowrap; }
+  .result { display: inline-block; border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 700; margin-top: 10px; }
+  .result.win { background: var(--light-green); color: var(--black); } .result.loss { background: var(--light-red); color: var(--black); } .result.draw { background: var(--light-yellow); color: var(--black); } .result.live { background: var(--bg); color: var(--dark-gray); }
+  .matchdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 12px; }
+  .matchdays .md { text-align: center; font-size: 11px; color: var(--mid-gray); }
+  .matchdays .md b { height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; margin-top: 4px; background: var(--bg); color: var(--dark-gray); font-weight: 700; }
+  .matchdays .md b.g { background: var(--green); color: var(--white); } .matchdays .md b.x { background: var(--red); color: var(--white); } .matchdays .md b.n { background: var(--yellow); color: var(--black); } .matchdays .md b.t { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--yellow); }
+  .results li { display: flex; justify-content: space-between; align-items: center; }
+  .flames { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; padding: 4px 6px 8px; }
+  .flames span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .flames span { color: var(--light-gray); }
+  .flames span small { font-size: 10px; color: var(--mid-gray); white-space: nowrap; }
+  .flames span.lit small { color: var(--black); font-weight: 600; }
+  .flames span.now { position: relative; }
+  .flames span.now::after { content: ""; position: absolute; bottom: -8px; width: 22px; height: 3px; border-radius: 2px; background: currentColor; }
+  .card.lvl { cursor: pointer; }
+  .card.lvl .chev { display: inline-block; transition: transform .2s; }
+  .card.lvl.open .chev { transform: rotate(180deg); }
+  #lvlDetail { margin-top: 10px; border-top: 1px solid var(--bg); padding-top: 4px; }
+  .empty-play { background: var(--light-green); border-radius: 14px; padding: 14px; text-align: center; font-weight: 600; color: var(--black); margin-bottom: 10px; }
+  .empty-play small { display: block; font-weight: 400; color: var(--dark-gray); font-size: 13px; margin-top: 2px; }
+
+  /* session pills */
+  .task { position: relative; display: flex; align-items: center; gap: 12px; border-radius: 14px; padding: 12px 10px 14px 12px; margin-bottom: 10px; overflow: hidden; }
+  .task.c0 { background: var(--light-red); } .task.c1 { background: var(--light-blue); } .task.c2 { background: var(--light-yellow); }
+  .task .main { flex: 1; display: flex; align-items: center; gap: 12px; background: transparent; border: 0; text-align: left; padding: 0; }
+  .task .ring { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--dark-gray); flex: 0 0 30px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--dark-gray); background: rgba(255,255,255,.55); }
+  .task .ring svg.i { font-size: 16px; stroke-width: 3; }
+  .task .txt { flex: 1; min-width: 0; }
+  .task .txt b { display: block; font-weight: 600; font-size: 15px; }
+  .task .txt small { color: var(--dark-gray); font-size: 12.5px; }
+  .task .pts { font-size: 14px; font-weight: 600; color: var(--dark-gray); white-space: nowrap; }
+  .task .undo { border: 0; background: transparent; color: var(--dark-gray); padding: 6px 6px; visibility: hidden; font-size: 18px; }
+  .task .undo.on { visibility: visible; }
+  .task .bar { position: absolute; left: 12px; right: 12px; bottom: 6px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.7); }
+  .task .bar i { display: block; height: 100%; border-radius: 2px; background: var(--dark-gray); transition: width .3s ease; }
+  .task.task.done { background: var(--white); border: 1.5px solid var(--bg); }
+  .task.done .ring { background: var(--mid-gray); border-color: var(--mid-gray); color: var(--white); }
+  .task.done .txt b { text-decoration: line-through; color: var(--mid-gray); font-weight: 500; }
+  .task.done .undo { color: var(--light-gray); }
+  .task.done .txt small, .task.done .pts, .task.done .bar { display: none; }
+  .task.done { padding: 10px 10px 10px 12px; }
+  .task.done .bar i { background: var(--black); }
+  .task.done .pts { color: var(--black); }
+  .daynav { text-align: center; margin: 4px 0; }
+  .daynav button { background: transparent; border: 0; color: var(--mid-gray); font-size: 13px; text-decoration: underline; padding: 6px; }
+  .editing-note { background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; color: var(--dark-gray); margin-bottom: 12px; }
+
+  /* cards */
+  .card { background: var(--white); border: 1.5px solid var(--bg); border-radius: 16px; padding: 14px; margin-top: 12px; }
+  .card h3 { font-size: 15px; font-weight: 600; margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card h3 .r { font-weight: 400; font-size: 13px; color: var(--mid-gray); }
+  .meter { height: 10px; border-radius: 5px; background: var(--bg); overflow: hidden; }
+  .meter > i { display: block; height: 100%; border-radius: 5px; background: var(--green); transition: width .5s ease, background .5s ease; }
+  .card p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--dark-gray); }
+  .prompt { font-size: 15px; line-height: 1.55; margin: 0; color: var(--black); padding: 12px 14px; background: var(--light-yellow); border-radius: 12px; }
+
+  /* season */
+  .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .day { text-align: center; }
+  .day .d { font-size: 11px; color: var(--mid-gray); margin-bottom: 4px; }
+  .day .box { height: 42px; border-radius: 10px; background: var(--bg); display: grid; place-items: center; font-size: 13px; font-weight: 600; color: var(--dark-gray); }
+  .day .box.full { background: var(--green); color: var(--white); }
+  .day .box.part { background: var(--yellow); color: var(--black); }
+  .day .box.today { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--yellow); }
+  .day .box.future { opacity: .45; }
+  .row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--bg); color: var(--dark-gray); }
+  .row:last-child { border-bottom: 0; }
+  .row b { color: var(--black); font-weight: 600; }
+  .history { list-style: none; margin: 0; padding: 0; }
+
+  /* trophies */
+  .trophies { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .trophy { border-radius: 16px; padding: 14px; min-height: 104px; background: var(--light-green); }
+  .trophy .ic { font-size: 26px; color: var(--black); line-height: 1; }
+  .trophy b { display: block; font-size: 15px; font-weight: 600; margin-top: 10px; }
+  .trophy small { color: var(--dark-gray); font-size: 12.5px; line-height: 1.35; display: block; margin-top: 2px; }
+  .trophy.locked { background: var(--white); border: 1.5px solid var(--bg); }
+  .trophy.locked .ic, .trophy.locked b { color: var(--light-gray); } .trophy.locked small { color: var(--light-gray); }
+
+  /* coach */
+  .field { margin-top: 12px; }
+  .field label { display: block; font-size: 13px; color: var(--dark-gray); margin-bottom: 5px; }
+  .field input { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--bg); background: var(--white); color: var(--black); }
+  .field input:focus { outline: 0; border-color: var(--green); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 12px; padding: 12px 18px; font-weight: 600; font-size: 15px; background: var(--green); color: var(--white); margin-top: 14px; }
+  .btn.quiet { background: var(--white); color: var(--dark-gray); border: 1.5px solid var(--bg); }
+  .btn.danger { background: var(--white); color: var(--red); border: 1.5px solid var(--light-red); }
+  .linkbox { font-size: 13px; background: var(--bg); border-radius: 10px; padding: 8px 12px; word-break: break-all; color: var(--black); }
+  .code { font-size: 20px; font-weight: 700; letter-spacing: .04em; background: var(--bg); border-radius: 10px; padding: 8px 12px; margin-top: 4px; word-break: break-all; }
+  .status-line { font-size: 12.5px; color: var(--mid-gray); margin-top: 12px; line-height: 1.4; }
+
+  /* bottom nav */
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; z-index: 5; }
+  .tabs-inner { display: flex; width: 100%; max-width: 480px; background: var(--green); border-radius: 22px 22px 0 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); }
+  .tab { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--white); opacity: .7; padding: 8px 4px 6px; font-size: 11px; font-weight: 600; border-radius: 14px; }
+  .tab .ic { display: block; font-size: 22px; margin: 0 auto 2px; }
+  .tab.on { opacity: 1; background: rgba(255,255,255,.22); }
+  .tab:focus-visible, .main:focus-visible, .btn:focus-visible, .undo:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  /* feedback */
+  .toast { position: fixed; bottom: calc(96px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--black); color: var(--white); font-size: 16px; font-weight: 600; padding: 8px 16px; border-radius: 999px; opacity: 0; z-index: 21; pointer-events: none; }
+  .toast.show { animation: toastin .9s ease-out forwards; }
+  @keyframes toastin { 0% { opacity: 0; transform: translateX(-50%) translateY(10px); } 20%, 75% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .toast.show { animation: fadeonly 1s ease forwards; } @keyframes fadeonly { 0%,75% { opacity: 1; transform: none; } 100% { opacity: 0; } } }
+  /* big moments */
+  .pop { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(44,52,54,.55); }
+  .pop.show { display: flex; }
+  .pop .box { position: relative; background: var(--white); border-radius: 24px; padding: 28px 22px 22px; width: 100%; max-width: 360px; text-align: center; overflow: hidden; animation: popin .35s cubic-bezier(.2,1.2,.4,1) both; }
+  @keyframes popin { from { transform: scale(.7) translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .pop .kicker { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--dark-gray); }
+  .pop .title { font-size: 40px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; margin: 6px 0 4px; }
+  .pop .name { font-size: 22px; font-weight: 700; margin: 4px 0 14px; }
+  .pop .ringbig { position: relative; width: 112px; height: 112px; margin: 8px auto 14px; }
+  .pop .ringbig svg { width: 112px; height: 112px; transform: rotate(-90deg); }
+  .pop .ringbig .track { fill: none; stroke: var(--bg); stroke-width: 9; }
+  .pop .ringbig .fill { fill: none; stroke: var(--green); stroke-width: 9; stroke-linecap: round; stroke-dasharray: 289; stroke-dashoffset: 289; animation: ringfill 1.1s cubic-bezier(.3,.8,.3,1) .25s forwards; }
+  @keyframes ringfill { to { stroke-dashoffset: 0; } }
+  .pop .ringbig .mid { position: absolute; inset: 0; display: grid; place-items: center; color: var(--black); font-size: 44px; }
+  .pop .ringbig .mid svg.i { stroke-width: 1.8; width: 46px; height: 46px; }
+  .pop .ringbig .mid svg.i { opacity: 0; animation: ballin .4s ease 1.05s forwards; }
+  @keyframes ballin { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .pop .ringbig .fill { animation: none; stroke-dashoffset: 0; } .pop .ringbig .mid svg.i { animation: none; opacity: 1; } }
+  .pop .facts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 6px 0 14px; }
+  .pop .facts span { background: var(--bg); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; font-weight: 600; color: var(--black); }
+  .pop p { margin: 0 0 6px; color: var(--dark-gray); font-size: 14.5px; line-height: 1.45; }
+  .pop .btn { margin-top: 10px; width: 100%; justify-content: center; }
+  .pop.fulltime .title { color: var(--green); }
+  .pop.levelup .title { color: var(--purple); }
+  .pop .conf { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; opacity: 0; animation: fall 1.6s ease-in forwards; }
+  @keyframes fall { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(420px) rotate(540deg); } }
+  @media (prefers-reduced-motion: reduce) { .pop .conf { display: none; } .pop .box { animation: none; } }
+  /* vocab */
+  .deck { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+  .deck div { background: var(--bg); border-radius: 12px; padding: 10px 6px; text-align: center; }
+  .deck b { display: block; font-size: 20px; font-weight: 700; }
+  .deck span { font-size: 11px; color: var(--dark-gray); }
+  .deck .due b { color: var(--red); } .deck .learn b { color: var(--yellow); } .deck .new b { color: var(--blue); }
+  .timerbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .timerbar .t { font-size: 34px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .timerbar .t.low { color: var(--red); }
+  .timerbar .n { font-size: 13px; color: var(--dark-gray); text-align: right; }
+  .flash { background: var(--white); border: 1.5px solid var(--bg); border-radius: 20px; padding: 26px 18px 18px; min-height: 260px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .flash .kind { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid-gray); font-weight: 600; margin-bottom: 14px; }
+  .flash .kind.new { color: var(--blue); } .flash .kind.learn { color: var(--yellow); } .flash .kind.due { color: var(--red); }
+  .flash .word { font-size: 32px; font-weight: 700; letter-spacing: -.01em; }
+  .flash .pos { font-size: 13px; color: var(--mid-gray); font-style: italic; margin-top: 2px; }
+  .flash .def { font-size: 17px; line-height: 1.5; color: var(--black); margin: 16px 0 6px; max-width: 320px; }
+  .flash .ex { font-size: 14px; color: var(--dark-gray); font-style: italic; line-height: 1.45; max-width: 320px; }
+  .flash .spacer { flex: 1; }
+  .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .grades button { border: 0; border-radius: 12px; padding: 10px 4px 8px; font-weight: 700; font-size: 14px; color: var(--black); }
+  .grades button small { display: block; font-weight: 500; font-size: 11px; color: var(--dark-gray); margin-top: 2px; }
+  .grades .again { background: var(--light-red); } .grades .hard { background: var(--light-yellow); } .grades .good { background: var(--light-green); } .grades .easy { background: var(--light-blue); }
+  .flash .btn { width: 100%; justify-content: center; margin-top: 14px; }
+  .grp { padding: 10px 0; border-bottom: 1px solid var(--bg); cursor: pointer; }
+  .grp:last-child { border-bottom: 0; }
+  .grp .hd { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; }
+  .grp .hd span { font-weight: 500; color: var(--dark-gray); font-size: 13px; }
+  .grp .gbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--bg); margin-top: 8px; }
+  .grp .gbar i { display: block; height: 100%; }
+  .grp .gbar .m { background: var(--green); } .grp .gbar .r { background: var(--light-green); } .grp .gbar .l { background: var(--yellow); }
+  .grp .words { display: none; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .grp.open .words { display: flex; }
+  .grp .words span { font-size: 12.5px; padding: 3px 9px; border-radius: 999px; background: var(--bg); color: var(--dark-gray); }
+  .grp .words span.m { background: var(--green); color: var(--white); font-weight: 600; }
+  .grp .words span.r { background: var(--light-green); color: var(--black); }
+  .grp .words span.l { background: var(--light-yellow); color: var(--black); }
+  .wl { max-height: 58vh; overflow: auto; text-align: left; margin: 8px -6px 0; padding: 0 6px; }
+  .wl div { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--bg); font-size: 14px; line-height: 1.4; }
+  .wl div:last-child { border-bottom: 0; }
+  .wl i { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: var(--light-gray); }
+  .wl i.m { background: var(--green); } .wl i.r { background: var(--light-green); } .wl i.l { background: var(--yellow); }
+  .wl b { font-weight: 600; }
+  .wl span { color: var(--dark-gray); }
+  .wl small { color: var(--red); font-size: 12px; white-space: nowrap; margin-left: auto; padding-left: 8px; }
+  .pop.wordlist .title { font-size: 22px; color: var(--black); }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btnrow .btn { margin-top: 12px; }
+  .summary { text-align: center; padding: 8px 0; }
+  .summary .big { font-size: 40px; font-weight: 800; letter-spacing: -.02em; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <section id="setup" class="hidden">
+    <h1 style="margin-top:48px">Training Ground</h1>
+    <p class="sub">This page is private. Open it from the family link, or enter the family code.</p>
+    <div class="card">
+      <div class="field"><label for="codeIn">Family code</label><input id="codeIn" autocapitalize="none" autocomplete="off" placeholder="from the coach"></div>
+      <button class="btn" id="codeGo" type="button">Open</button>
+      <button class="btn quiet" id="codeNew" type="button">Start a new season with a fresh code</button>
+      <p class="status-line" id="codeMsg"></p>
+    </div>
+  </section>
+  <section id="viewToday">
+    <h1 id="greeting">Match day</h1>
+    <p class="sub" id="greetSub"></p>
+    <div class="stats">
+      <div class="stat days" id="sbDaysCard"><div class="big" id="sbDays">–</div><div class="lbl">days to kickoff</div></div>
+      <button class="stat form" id="formCell" type="button" aria-label="Form and XP bonus"><div class="flamebox" id="sbForm"></div><div class="lbl" id="sbFormLbl">form</div><div class="fdots" id="fdots"></div></button>
+      <div class="stat match"><div class="big" id="sbMatch">0 – 0</div><div class="lbl" id="sbMatchLbl">this week's match</div></div>
+    </div>
+    <div class="pitch" id="pitch">
+      <svg viewBox="0 0 340 130" aria-hidden="true">
+        <rect width="340" height="130" rx="16" fill="#52B495"/>
+        <g fill="none" stroke="#FFFFFF" stroke-width="2" opacity=".9">
+          <rect x="10" y="10" width="320" height="110" rx="4"/>
+          <line x1="170" y1="10" x2="170" y2="120"/><circle cx="170" cy="65" r="18"/>
+          <rect x="10" y="30" width="40" height="70"/><rect x="290" y="30" width="40" height="70"/>
+          <rect x="290" y="48" width="18" height="34"/>
+        </g>
+        <g class="net"><rect x="326" y="47" width="8" height="36" fill="#FFFFFF" opacity=".95"/><g stroke="#B4BEC0" stroke-width="1"><line x1="328" y1="47" x2="328" y2="83"/><line x1="331" y1="47" x2="331" y2="83"/><line x1="326" y1="56" x2="334" y2="56"/><line x1="326" y1="65" x2="334" y2="65"/><line x1="326" y1="74" x2="334" y2="74"/></g></g>
+        <g class="player" id="player">
+          <circle cx="0" cy="48" r="7" fill="#F3B0A0"/>
+          <path d="M-7 56h14l3 16h-4l-2-9h-8l-2 9h-4z" fill="#4081DB"/>
+          <path d="M-4 72l-2 12h4l2-10zM4 72l2 12h-4l-2-10z" fill="#2C3436"/>
+        </g>
+        <g class="ball" id="ball"><circle cx="0" cy="84" r="5" fill="#FFFFFF" stroke="#2C3436" stroke-width="1.5"/><path d="M-2 84l2-2 2 2-2 2z" fill="#2C3436"/></g>
+        <g class="goaltxt"><rect x="200" y="14" width="120" height="30" rx="15" fill="#FFFFFF"/><text x="260" y="35" text-anchor="middle" font-size="16" font-weight="800" fill="#52B495" id="goalTxt">GOAL!</text></g>
+      </svg>
+      <div class="steps" id="pitchSteps"></div>
+    </div>
+    <h2 id="pitchDate"></h2>
+    <div class="editing-note hidden" id="editingNote">You're filling in yesterday. Sessions you add here still count.</div>
+    <div id="tasks"></div>
+    <h2 id="doneTitle" class="hidden">Goals scored today</h2>
+    <div id="doneTasks"></div>
+    <div class="daynav"><button id="dayNavBtn" type="button">Forgot to log yesterday?</button></div>
+    <div class="card lvl" id="levelCard" role="button" tabindex="0" aria-expanded="false">
+      <h3><span id="lvlTitle">Level 1 · Trialist</span><span class="r">Details <span class="chev">&#9662;</span></span></h3>
+      <div class="meter"><i id="xpBar" style="width:0%;background:var(--purple)"></i></div>
+      <div id="lvlDetail" class="hidden"></div>
+    </div>
+    <div class="card hidden" id="essayCard">
+      <h3>Essay prompt <span class="r">30 minutes, timed</span></h3>
+      <p class="prompt" id="essayPrompt"></p>
+    </div>
+  </section>
+
+  <section id="viewVocab" class="hidden">
+    <h1>Vocab</h1>
+    <p class="sub" id="vocabSub"></p>
+    <div id="vocabHome">
+      <div class="deck"><div class="due"><b id="dkDue">0</b><span>due</span></div><div class="learn"><b id="dkLearn">0</b><span>learning</span></div><div class="new"><b id="dkNew">0</b><span>new today</span></div><div><b id="dkKnown">0</b><span>mastered</span></div></div>
+      <div class="card">
+        <h3>10-minute review</h3>
+        <p style="margin:0">Words you're due to see come first, then new words from the current group, in order. A new word comes back at least twice in the same session before it moves to tomorrow. When the clock runs out, one vocab review is checked off on Match day.</p>
+        <div class="btnrow"><button class="btn" id="vStart" type="button">Start the clock</button><button class="btn quiet" id="vTrouble" type="button">Trouble words only</button></div>
+        <p class="status-line" id="troubleNote"></p>
+      </div>
+      <div class="card"><h3>Groups <span class="r">tap one for its word list</span></h3><div id="groups"></div><p>A word is mastered once it has graduated and then been "Got it" <b id="mstreak"></b> more times in a row on separate days. Missing it starts the count over.</p></div>
+      <div class="card"><h3>How it works</h3><p style="margin:0">Each word has a memory. Get it right and it comes back later — 1 day, then 3, then a week. Miss it and it comes back in a minute. Be honest with the buttons: that's what makes the spacing work.</p></div>
+    </div>
+    <div id="vocabSession" class="hidden">
+      <div class="timerbar"><div class="t" id="vClock">10:00</div><div class="n" id="vCount"></div></div>
+      <div class="flash" id="flash"></div>
+      <div class="daynav"><button id="vQuit" type="button">Stop early (doesn't count)</button></div>
+    </div>
+  </section>
+  <section id="viewSeason" class="hidden">
+    <h1>Season</h1>
+    <p class="sub">Green is a full day. Yellow is a partial day.</p>
+    <div class="card">
+      <h3>This week's match <span class="r" id="matchWhen"></span></h3>
+      <div class="scoreline"><span class="team" id="mHome">Leo</span><span class="score" id="mScore">0 – 0</span><span class="team r">The Opposition</span></div>
+      <div class="matchdays" id="matchDays"></div>
+      <div id="mResult"></div>
+      <p style="margin-top:10px">A full day scores. Under half done and the opposition scores. In between is a stalemate.</p>
+    </div>
+    <div class="card"><h3>Sessions this week</h3><div class="week" id="weekGrid"></div></div>
+    <div class="card" id="resultsCard"><h3>Past matches</h3><ul class="history results" id="results"></ul></div>
+    <div class="card"><h3>Totals</h3><div id="totals"></div></div>
+    <div class="card"><h3>Recent matches</h3><ul class="history" id="history"></ul></div>
+  </section>
+
+  <section id="viewTrophies" class="hidden">
+    <h1>Trophy cabinet</h1>
+    <p class="sub" id="trophyCount"></p>
+    <div class="trophies" id="trophies"></div>
+  </section>
+
+  <section id="viewCoach" class="hidden">
+    <h1>Coach's office</h1>
+    <p class="sub">Settings and a plain view of how it's going.</p>
+    <div class="card"><h3>Today</h3><div id="coachToday"></div></div>
+    <div class="card">
+      <h3>Settings</h3>
+      <div class="field"><label for="nameIn">Player name</label><input id="nameIn" placeholder="First name or nickname"></div>
+      <div class="field"><label for="dateIn">Test date</label><input id="dateIn" type="date"></div>
+      <div class="field"><label for="newIn">New vocab words per day</label><input id="newIn" type="number" min="5" max="100" placeholder="20"></div>
+      <button class="btn" id="saveBtn" type="button">Save settings</button>
+    </div>
+    <div class="card">
+      <h3>Family link</h3>
+      <p style="margin:0 0 6px">The code is the password. Send this link to his phone once; after that the app remembers it.</p>
+      <div class="linkbox" id="playerLink"></div>
+      <button class="btn" id="copyBtn" type="button">Copy the link</button>
+      <div class="field"><label>Family code</label><div class="code" id="codeShow"></div></div>
+      <button class="btn quiet" id="signOut" type="button">Forget code on this phone</button>
+    </div>
+    <div class="card">
+      <h3>Preview the celebrations</h3>
+      <p style="margin:0 0 4px">See what he sees, without earning it. Nothing is saved.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn quiet" id="pvGoal" type="button">Score the winner</button>
+        <button class="btn quiet" id="pvFull" type="button">Full time</button>
+        <button class="btn quiet" id="pvLevel" type="button">Level up</button>
+      </div>
+    </div>
+    <div class="card">
+      <button class="btn danger" id="resetBtn" type="button">Reset the whole season</button>
+      <div class="status-line" id="syncStatus"></div>
+      <div class="status-line">Version <b id="verShow"></b> · <button class="btn quiet" id="updateBtn" type="button" style="padding:6px 10px;margin:0;font-size:13px">Check for update</button></div>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs"><div class="tabs-inner">
+  <button class="tab on" data-view="viewToday" type="button"><span class="ic" data-icon="ball"></span>Match day</button>
+  <button class="tab" data-view="viewVocab" type="button"><span class="ic" data-icon="book"></span>Vocab</button>
+  <button class="tab" data-view="viewSeason" type="button"><span class="ic" data-icon="calendar"></span>Season</button>
+  <button class="tab" data-view="viewTrophies" type="button"><span class="ic" data-icon="trophy"></span>Trophies</button>
+  <button class="tab" data-view="viewCoach" type="button"><span class="ic" data-icon="clipboard"></span>Coach</button>
+</div></nav>
+
+<div class="toast" id="toast"></div>
+<div class="pop" id="pop" role="dialog" aria-modal="true"><div class="box" id="popBox"></div></div>
+
+<!-- Firebase is the only thing loaded from the network. If it can't load, the app still runs on this phone alone. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" onerror="window.__fbFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" onerror="window.__fbFailed=true"></script>
+<!-- Your Firebase config lives in config.js next to this file, so updating index.html never touches it. See SETUP.md. -->
+<script src="config.js" onerror="window.__noConfig=true"></script>
+
+<script>
+/* ============================================================
+   1. VERSION + CONFIG — the Firebase config is read from config.js (see SETUP.md), never pasted here.
+   ============================================================ */
+const APP_VERSION = "2026-09-09.1";
+const firebaseConfig = window.firebaseConfig || null;
+// The family code is the password: it's the Firestore record name, it's never written into this file, and it only travels in the link you share.
+const mem = {};
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return mem[k] || null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { mem[k] = v; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) { delete mem[k]; } }
+const CODE_MIN = 12;
+let code = lsGet("tg_code") || "";
+
+/* ============================================================
+   2. THE TRAINING PLAN — edit numbers and wording here
+   ============================================================ */
+const PLAN = {
+  weekday: [
+    { id: "s1", label: "Study block 1", sub: "30 min · when we get home", pts: 30 },
+    { id: "s2", label: "Study block 2", sub: "30 min · after dinner", pts: 30 },
+    { id: "v",  label: "Vocab reviews", sub: "4 × 10 min, spread through the day", pts: 10, count: 4 }
+  ],
+  weekend: [
+    { id: "e",  label: "Essay", sub: "One full timed essay", pts: 60 },
+    { id: "p",  label: "Practice test sections", sub: "", pts: 70, count: 2 }
+  ]
+};
+const SECTIONS = ["Verbal", "Quantitative", "Reading", "Math Achievement"];
+const ESSAYS = [
+  "If you could add one class to your school's schedule that every student had to take, what would it be and why?",
+  "Describe a time you changed your mind about something important. What made you reconsider?",
+  "What is one skill you think every ninth grader should have before starting high school? Explain your reasoning.",
+  "Some people believe competition brings out the best in people; others think it brings out the worst. Where do you stand?",
+  "Write about a place that matters to you and explain what it has taught you.",
+  "If you were given one hour each week to teach younger students anything at all, what would you teach and how?",
+  "Describe a challenge you faced on a team. What did you learn about working with others?",
+  "Should schools require students to participate in a sport or physical activity? Take a position and defend it.",
+  "Write about a person you admire who is not famous. What do they do that earns your respect?",
+  "What is a rule you would change at your school, and what would you replace it with?",
+  "Explain something you are good at and how you got better at it.",
+  "If you could spend a year living anywhere in the world, where would you go and what would you hope to gain?"
+];
+/* ============================================================
+   VOCAB — "word | part of speech | definition | example". Add lines; the app tracks each word's memory separately.
+   ============================================================ */
+/* Lines starting with # name a group; the words below it belong to that group. Duplicates are skipped, so overlapping lists are fine. */
+const WORDS = `
+# Group 1 · abase
+abase|verb|to lower someone in rank, dignity, or self-respect|He refused to abase himself by begging for the job.
+adulterate|verb|to make something impure by adding a worse substance|The juice was adulterated with sugar water.
+ancillary|adjective|providing support to the main part; secondary|The museum sells ancillary items like postcards and maps.
+boisterous|adjective|noisy, energetic, and rowdy|The boisterous fans sang the whole match.
+contravene|verb|to go against a rule or law|Parking here contravenes the school's rules.
+deficient|adjective|lacking something needed; not enough|A diet deficient in iron makes you tired.
+disparate|adjective|essentially different; not able to be compared|The two books covered disparate subjects.
+emancipate|verb|to set free from control or restriction|The law emancipated the enslaved people.
+espionage|noun|spying to obtain secret information|The film is about espionage during the Cold War.
+feasible|adjective|possible to do easily or conveniently|Finishing the project by Friday is feasible.
+glib|adjective|fluent but shallow or insincere|His glib answer didn't really address the question.
+hubris|noun|excessive pride or self-confidence|Hubris led the captain to ignore the storm warnings.
+impugn|verb|to challenge as false or question the honesty of|Nobody could impugn her motives.
+ingratiate|verb|to bring oneself into favor by flattery|He tried to ingratiate himself with the coach.
+irrelevant|adjective|not connected with the matter at hand|Your shoe size is irrelevant to this math problem.
+listless|adjective|lacking energy or enthusiasm|The listless puppy wouldn't play in the heat.
+mettle|noun|ability to cope well with difficulty; courage|The final showed the team's mettle.
+numinous|adjective|having a strong spiritual or mysterious quality|The empty cathedral felt numinous at dawn.
+panegyric|noun|a speech or text of high praise|The coach's retirement speech was a panegyric to his players.
+philanthropy|noun|generous giving to help others|Her philanthropy built two schools.
+prestigious|adjective|respected and admired as very important|She won a prestigious science award.
+putrefy|verb|to decay or rot with a foul smell|The leftovers putrefied in the warm garage.
+replete|adjective|filled or well-supplied with something|The essay was replete with vivid details.
+sardonic|adjective|grimly mocking or cynical|His sardonic smile said he didn't believe a word.
+squalor|noun|a state of being extremely dirty and unpleasant|The abandoned house had fallen into squalor.
+surpass|verb|to exceed or be greater than|She surpassed her old record by two seconds.
+treatise|noun|a long, formal written work on a subject|He wrote a treatise on soccer tactics.
+assuage|verb|to make an unpleasant feeling less intense|A snack assuaged his hunger.
+circumspect|adjective|cautious and unwilling to take risks|Be circumspect when sharing personal details online.
+verbose|adjective|using more words than needed|The verbose essay lost the reader.
+# Group 2 · abate
+abate|verb|to become less intense or widespread|The storm finally abated by morning.
+adversary|noun|an opponent or enemy|The two teams were adversaries all season.
+anecdote|noun|a short, amusing or interesting story about a real event|Grandpa told an anecdote about his first day of school.
+astute|adjective|sharp and clever at judging situations|An astute reader noticed the error on page one.
+bolster|verb|to support or strengthen|Good sleep bolsters your memory.
+circumstantial|adjective|based on surrounding details rather than direct proof|The evidence was circumstantial, so the case was dismissed.
+contrite|adjective|feeling deep regret for having done wrong|He was contrite after breaking the window.
+dissonance|noun|a lack of harmony or agreement|There was dissonance between what he said and what he did.
+emasculate|verb|to weaken or deprive of strength and force|The edits emasculated the article's main argument.
+esteem|noun|respect and admiration|She is held in high esteem by her teammates.
+fecund|adjective|producing many offspring, crops, or ideas|The fecund valley grows three harvests a year.
+gluttonous|adjective|excessively greedy, especially about food|The gluttonous guest ate half the cake.
+hyperbole|noun|exaggerated statements not meant literally|"I've told you a million times" is hyperbole.
+impunity|noun|freedom from punishment|The bullies acted with impunity until a teacher stepped in.
+inimical|adjective|tending to obstruct or harm; hostile|Late nights are inimical to good grades.
+irremediable|adjective|impossible to correct or repair|The damage to the painting was irremediable.
+lithe|adjective|thin, graceful, and flexible|The lithe gymnast flipped across the mat.
+migrate|verb|to move from one region to another, often seasonally|Geese migrate south for the winter.
+nymph|noun|in myth, a nature spirit in the form of a young woman|The poem describes a nymph living in the river.
+pantomime|noun|expression by gestures without words|She acted out the story in pantomime.
+phlegmatic|adjective|calm and unemotional|The phlegmatic goalkeeper never panicked.
+presumptuous|adjective|too bold or forward; overstepping|It was presumptuous to order for everyone.
+quagmire|noun|a soft boggy area; a difficult situation|The lawsuit became a legal quagmire.
+reprehensible|adjective|deserving strong criticism|Cheating on the test was reprehensible.
+sate|verb|to satisfy fully|A big lunch sated his hunger.
+squander|verb|to waste carelessly|Don't squander your study time on your phone.
+surreal|adjective|strange and dreamlike|Meeting his hero felt surreal.
+trenchant|adjective|sharp, clear, and forceful|Her trenchant comment ended the debate.
+verboten|adjective|forbidden|Phones are verboten during the exam.
+# Group 3 · abdicate
+abdicate|verb|to give up a position of power or a duty|The king abdicated the throne to his son.
+adversity|noun|hardship or difficulty|She stayed calm in the face of adversity.
+alacrity|noun|cheerful readiness or eagerness|He accepted the invitation with alacrity.
+animosity|noun|strong hostility or dislike|There was animosity between the rival captains.
+asylum|noun|protection or shelter, especially for refugees|The family was granted asylum in a new country.
+bombastic|adjective|using big, impressive words with little meaning|The bombastic speech impressed no one.
+conundrum|noun|a confusing and difficult problem|How to fit everything in was a real conundrum.
+delectable|adjective|delicious; delightful|The bakery sells delectable pastries.
+distraught|adjective|deeply upset and agitated|She was distraught when the dog went missing.
+embed|verb|to fix firmly into something|The splinter was embedded in his palm.
+estrange|verb|to cause someone to become distant or unfriendly|The argument estranged the two brothers for years.
+feign|verb|to pretend to feel or have|He feigned surprise at the party he already knew about.
+goad|verb|to provoke or urge into action|Her friends goaded her into joining the race.
+hypocritical|adjective|claiming standards one does not follow|It's hypocritical to demand honesty while lying.
+inane|adjective|silly and pointless|The show was full of inane jokes.
+iniquitous|adjective|grossly unfair or wicked|The iniquitous law punished the poor.
+itinerant|adjective|traveling from place to place|An itinerant musician played in every town.
+liturgy|noun|a set form of public worship|The choir sang during the liturgy.
+mince|verb|to cut into tiny pieces; to soften one's words|She didn't mince words about the bad play.
+obdurate|adjective|stubbornly refusing to change|The obdurate coach kept the same lineup.
+parable|noun|a simple story with a moral lesson|The parable taught the value of patience.
+pretentious|adjective|trying to seem more important than one is|The pretentious menu described fries as "hand-cut potato batons."
+punctilious|adjective|very careful about details and correct behavior|A punctilious referee follows every rule.
+quail|verb|to feel or show fear; to flinch|The rookie quailed at the size of the crowd.
+reprimand|verb|to scold formally|The teacher reprimanded him for being late.
+satire|noun|humor that exposes foolishness or vice|The cartoon was a satire of school lunches.
+squelch|verb|to crush or silence completely|The coach squelched the rumor immediately.
+surreptitious|adjective|done secretly or by stealth|He took a surreptitious glance at his phone.
+trepidation|noun|a feeling of fear or nervousness|She walked onto the stage with trepidation.
+verdant|adjective|green with grass or plants|The verdant field was ready for the match.
+# Group 4 · aberration
+aberration|noun|a departure from what is normal|A losing streak was an aberration for the champions.
+advocate|verb|to publicly support or recommend|She advocates for longer lunch breaks.
+annihilate|verb|to destroy completely|The storm annihilated the beach huts.
+atheist|noun|a person who does not believe in any god|The debate featured an atheist and a priest.
+boor|noun|a rude, clumsy person|The boor talked loudly through the movie.
+clamor|noun|a loud and confused noise; a demand|There was a clamor for a rematch.
+convalesce|verb|to recover health after illness|He convalesced at home for two weeks.
+deleterious|adjective|causing harm or damage|Sugary drinks have a deleterious effect on teeth.
+dither|verb|to be indecisive|Stop dithering and pick a topic.
+embellish|verb|to decorate; to add invented details to a story|He embellished the fishing story every time he told it.
+ethos|noun|the character or guiding beliefs of a group|Hard work is part of the team's ethos.
+fervent|adjective|having intense passion|She is a fervent supporter of the club.
+gouge|verb|to cut or scoop out roughly; to overcharge|The chair leg gouged the floor.
+hypothetical|adjective|based on a suggested idea, not on fact|Let's consider a hypothetical case.
+implacable|adjective|impossible to calm or satisfy|The implacable critic never gave a good review.
+inapt|adjective|not suitable or appropriate|The joke was inapt at a funeral.
+jargon|noun|special words used by a particular group|Medical jargon confused the patient.
+lofty|adjective|very high; noble or grand|She has lofty goals for the season.
+misanthrope|noun|a person who dislikes people in general|The misanthrope lived alone in the hills.
+obfuscate|verb|to make unclear or confusing|The report obfuscated the real cost.
+paradox|noun|a statement that seems contradictory but may be true|"Less is more" is a paradox.
+pilgrimage|noun|a journey to a sacred or special place|Fans made a pilgrimage to the old stadium.
+prevalent|adjective|widespread in a particular area or time|Colds are prevalent in winter.
+quandary|noun|a state of uncertainty about what to do|He was in a quandary about which school to choose.
+reprisal|noun|an act of retaliation|The team feared reprisal after the rough tackle.
+saturate|verb|to soak thoroughly; to fill completely|Rain saturated the pitch.
+stagnant|adjective|not flowing or moving; not developing|The pond was stagnant and smelly.
+surrogate|noun|a substitute|The coach became a surrogate parent to the players.
+tribulation|noun|great trouble or suffering|The team endured many tribulations that season.
+vernal|adjective|relating to spring|Vernal flowers appeared in April.
+# Starter set
+abhor|verb|to hate deeply|She abhors cruelty to animals.
+acquiesce|verb|to accept reluctantly but without protest|He acquiesced to the new rules.
+adroit|adjective|clever or skillful|An adroit negotiator, she closed the deal quickly.
+alacrity|noun|cheerful readiness or eagerness|He accepted the invitation with alacrity.
+ambivalent|adjective|having mixed feelings|I'm ambivalent about moving to a new city.
+anomaly|noun|something that deviates from what is normal|A warm day in January is an anomaly.
+apathy|noun|lack of interest or concern|Voter apathy was high in the election.
+arduous|adjective|involving hard and tiring effort|The climb to the summit was arduous.
+austere|adjective|severe or strict; plain and without comfort|The monks lived an austere life.
+benevolent|adjective|well-meaning and kindly|A benevolent donor paid for the new library.
+brevity|noun|shortness of time or expression|The speech was admired for its brevity.
+candor|noun|honesty and directness|She answered every question with candor.
+capricious|adjective|given to sudden changes of mood or behavior|The weather here is capricious.
+censure|verb|to express strong disapproval|The committee censured the senator.
+cogent|adjective|clear, logical, and convincing|She made a cogent argument for the change.
+complacent|adjective|smug and uncritical satisfaction with oneself|After winning, the team grew complacent.
+conciliatory|adjective|intended to make peace|He sent a conciliatory note after the argument.
+copious|adjective|abundant in supply|She took copious notes during the lecture.
+debilitate|verb|to make weak|The illness debilitated him for weeks.
+deference|noun|humble respect or submission|She showed deference to her grandparents.
+diligent|adjective|careful and persistent in work|A diligent student reviews every day.
+disparage|verb|to belittle or speak of with contempt|Don't disparage your teammates.
+ebullient|adjective|cheerful and full of energy|The ebullient crowd cheered every goal.
+eloquent|adjective|fluent and persuasive in speech|Her eloquent speech moved the audience.
+enigma|noun|a person or thing that is mysterious|The disappearance remains an enigma.
+ephemeral|adjective|lasting for a very short time|Fame can be ephemeral.
+exacerbate|verb|to make a problem worse|Skipping sleep exacerbates stress.
+fastidious|adjective|very attentive to detail; hard to please|He is fastidious about his handwriting.
+frugal|adjective|sparing or economical with money|A frugal shopper waits for sales.
+garrulous|adjective|excessively talkative|The garrulous host barely let guests speak.
+hackneyed|adjective|overused and unoriginal|The essay was full of hackneyed phrases.
+impetuous|adjective|acting quickly without thought|An impetuous decision cost him the game.
+indifferent|adjective|having no particular interest or concern|He was indifferent to the outcome.
+laconic|adjective|using very few words|His laconic reply was just "fine."
+meticulous|adjective|showing great attention to detail|She kept meticulous records.
+novice|noun|a person new to a field or activity|As a novice, he practiced the basics.
+obstinate|adjective|stubbornly refusing to change one's opinion|The obstinate mule wouldn't move.
+pragmatic|adjective|dealing with things sensibly and realistically|A pragmatic plan fits the time we have.
+reticent|adjective|not revealing one's thoughts readily|He was reticent about his past.
+scrutinize|verb|to examine closely and critically|Scrutinize the contract before signing.
+tenacious|adjective|holding firmly; persistent|A tenacious defender never gives up.
+`.trim().split("\n").reduce((acc, l) => { l = l.trim(); if (!l) return acc; if (l[0] === "#") { acc.g = l.slice(1).trim(); return acc; } const [w, pos, def, ex] = l.split("|"); const word = w.trim().toLowerCase(); if (word && !acc.list.some(y => y.w === word)) acc.list.push({ w: word, pos, def, ex, g: acc.g || "Words" }); return acc; }, { g: "", list: [] }).list;
+const GROUPS = WORDS.map(w => w.g).filter((g, i, a) => a.indexOf(g) === i);
+const MASTER_STREAK = 3; // "Got it" this many times in a row, on separate days, after graduating
+// Learning steps are short on purpose so a new word comes round at least twice inside one 10-minute session before it graduates to tomorrow.
+const VOCAB = { newPerDay: 20, learnSteps: [1, 4], gradIv: 1, easyIv: 4, relearnStep: 4, minEase: 1.3, maxIv: 365, sessionMin: 10 };
+
+const LEVELS = [
+  { xp: 0,    title: "Trialist" },
+  { xp: 150,  title: "Academy Prospect" },
+  { xp: 400,  title: "Youth Squad" },
+  { xp: 750,  title: "Reserve Team" },
+  { xp: 1200, title: "First-Team Debut" },
+  { xp: 1800, title: "Regular Starter" },
+  { xp: 2600, title: "Team Captain" },
+  { xp: 3600, title: "Club Legend" }
+];
+const FORM = { start: 40, fullDay: 20, partialDay: 8, missedDay: -25 };
+// Momentum is shown as a flame, never as a number. Each band has a color and a description.
+const FORM_BANDS = [
+  { min: 0,  name: "Cold",        color: "var(--red)",    text: "The flame's almost out. Every session today rebuilds it — one good day and you're warming up." },
+  { min: 25, name: "Warming up",  color: "var(--yellow)", text: "Momentum is coming back. Full days feed the flame faster than partial ones." },
+  { min: 50, name: "In form",     color: "var(--green)",  text: "Solid. You're earning bonus XP on every session now." },
+  { min: 75, name: "On fire",     color: "var(--green)",  text: "Big XP multiplier. Missing a day shrinks the flame, but never puts it out." },
+  { min: 95, name: "World class", color: "var(--green)",  text: "Maximum multiplier. Keep the run going to kickoff." }
+];
+
+/* ============================================================
+   3. ICONS — inline SVG, no network needed
+   ============================================================ */
+const P = (paths) => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + paths + '</svg>';
+const ICONS = {
+  ball: P('<circle cx="12" cy="12" r="9"/><path d="M12 7l4.5 3.3-1.7 5.4H9.2L7.5 10.3z"/><path d="M12 7V3.2M16.5 10.3l3.6-1.2M14.8 15.7l2.3 3M9.2 15.7l-2.3 3M7.5 10.3L3.9 9.1"/>'),
+  calendar: P('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
+  trophy: P('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M8 21h8M9 17h6"/>'),
+  clipboard: P('<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 11h6M9 15h6"/>'),
+  check: P('<path d="M5 12.5l4.5 4.5L19 7"/>'),
+  minus: P('<path d="M6 12h12"/>'),
+  clock: P('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M10 2h4"/>'),
+  three: P('<circle cx="7" cy="16" r="3.5"/><circle cx="17" cy="16" r="3.5"/><circle cx="12" cy="7" r="3.5"/>'),
+  shield: P('<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>'),
+  flag: P('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
+  book: P('<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/>'),
+  pen: P('<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M13 8l3 3"/>'),
+  target: P('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>'),
+  flame: P('<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/>'),
+  shirt: P('<path d="M8 4l4 2 4-2 5 4-3 3-1-1v11H7V10l-1 1-3-3z"/>'),
+  arrowup: P('<path d="M4 18l6-6 4 4 6-8"/><path d="M15 8h5v5"/>'),
+  star: P('<path d="M12 3l2.7 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17.3 6.4 20.3l1.2-6.3L3 9.6l6.3-.8z"/>'),
+  flameFill: '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:100%;height:100%;display:block"><path fill="currentColor" d="M12 1c2.2 5 8 7 8 14a8 8 0 0 1-16 0c0-3.6 2.2-5.4 4.4-8.2.2 2.8 1.6 4.4 3.4 4.4C11.6 8 9.6 5 12 1z"/></svg>'
+};
+document.querySelectorAll("[data-icon]").forEach(el => el.innerHTML = ICONS[el.dataset.icon]);
+function flame(band, px) { return '<span style="display:inline-block;width:' + px + 'px;height:' + px + 'px;color:' + band.color + '">' + ICONS.flameFill + '</span>'; }
+
+/* ============================================================
+   4. STORAGE (Firestore with local fallback)
+   ============================================================ */
+const CONFIGURED = !!(firebaseConfig && firebaseConfig.apiKey);
+const FB_OK = CONFIGURED && !window.__fbFailed && typeof firebase !== "undefined";
+let db = null;
+if (FB_OK) { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); }
+let data = blank(), unsub = null, viewDate = null; // viewDate null = today
+function blank() { return { name: "", testDate: "", started: today(), log: {} }; }
+function docRef() { return db.collection("families").doc(code); }
+async function load() {
+  if (!FB_OK) {
+    const raw = lsGet("tg_data_" + code); data = raw ? Object.assign(blank(), JSON.parse(raw)) : blank();
+    await save(); render();
+    setSync(!CONFIGURED ? "Preview mode: no config.js found, so data stays on this phone. See SETUP.md." :
+      "Firebase didn't load (offline?). Logging on this phone only — reload when back online.");
+    return;
+  }
+  unsub = docRef().onSnapshot(snap => {
+    data = snap.exists ? Object.assign(blank(), snap.data()) : blank();
+    if (!snap.exists) save();
+    render(); setSync("Synced with the other phone.");
+  }, err => setSync("Sync error: " + err.message));
+}
+async function save() { if (!code) return; if (!FB_OK) { lsSet("tg_data_" + code, JSON.stringify(data)); return; } await docRef().set(data); }
+function setSync(t) { $("syncStatus").textContent = t; }
+
+/* ============================================================
+   5. DATES
+   ============================================================ */
+function today() { return iso(new Date()); }
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function fromIso(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+function addDays(s, n) { const d = fromIso(s); d.setDate(d.getDate() + n); return iso(d); }
+function isWeekend(s) { const w = fromIso(s).getDay(); return w === 0 || w === 6; }
+function dayNum(s) { return Math.round(fromIso(s).getTime() / 86400000); }
+function weekIndex(s) { return Math.floor((dayNum(s) + 3) / 7); }
+function fmt(s) { return fromIso(s).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+function fmtShort(s) { return fromIso(s).toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+function mondayOf(s) { const d = fromIso(s); const w = (d.getDay() + 6) % 7; d.setDate(d.getDate() - w); return iso(d); }
+
+/* ============================================================
+   6. SCORING
+   ============================================================ */
+function planFor(d) { return isWeekend(d) ? PLAN.weekend : PLAN.weekday; }
+function entry(d) { return data.log[d] || {}; }
+function dayProgress(d) {
+  const p = planFor(d), e = entry(d); let done = 0, total = 0;
+  p.forEach(t => { const n = t.count || 1; total += n; done += Math.min(n, Number(e[t.id] || 0)); });
+  return { done, total, full: done === total, any: done > 0 };
+}
+function basePoints(d) { const p = planFor(d), e = entry(d); return p.reduce((s, t) => s + t.pts * Math.min(t.count || 1, Number(e[t.id] || 0)), 0); }
+function formBand(f) { let b = FORM_BANDS[0]; FORM_BANDS.forEach(x => { if (f >= x.min) b = x; }); return b; }
+function mult(form) { return 1 + form / 200; }
+// Walks every day of the season. Form is judged at the end of each day; today's sessions use the form the day started with.
+function season() {
+  const start = data.started || today(), t = today();
+  let form = FORM.start, xp = 0, run = 0, best = 0, fullDays = 0, days = [];
+  for (let d = start; d <= t; d = addDays(d, 1)) {
+    const pr = dayProgress(d), dayXp = Math.round(basePoints(d) * mult(form));
+    xp += dayXp; days.push({ date: d, ...pr, xp: dayXp, formBefore: form });
+    if (pr.full) { fullDays++; run++; best = Math.max(best, run); }
+    if (d !== t) {
+      form += pr.full ? FORM.fullDay : pr.any ? FORM.partialDay : FORM.missedDay;
+      form = Math.max(0, Math.min(100, form));
+      if (!pr.full) run = 0;
+    }
+  }
+  let lvl = 0; LEVELS.forEach((L, i) => { if (xp >= L.xp) lvl = i; });
+  const next = LEVELS[lvl + 1];
+  const pct = next ? Math.round(100 * (xp - LEVELS[lvl].xp) / (next.xp - LEVELS[lvl].xp)) : 100;
+  return { form, xp, level: lvl + 1, title: LEVELS[lvl].title, next, pct, days, run, best, fullDays };
+}
+/* Weekly match: Monday to Sunday. Full day = goal for him. Under half done = goal for the opposition. In between = nothing. Today only counts once it's full. */
+function dayVerdict(d, t) {
+  const pr = dayProgress(d);
+  if (pr.full) return "g";
+  if (d >= t) return "";                       // today isn't over
+  return pr.done * 2 < pr.total ? "x" : "n";
+}
+function matchFor(monday, t) {
+  const start = data.started || t; let us = 0, them = 0, days = [];
+  for (let i = 0; i < 7; i++) { const d = addDays(monday, i); let v = ""; if (d >= start && d <= t) v = dayVerdict(d, t); if (v === "g") us++; if (v === "x") them++; days.push({ date: d, v, future: d > t }); }
+  const over = addDays(monday, 6) < t;
+  return { monday, us, them, days, over, result: !over ? "live" : us > them ? "win" : us < them ? "loss" : "draw" };
+}
+function matches() {
+  const t = today(), start = mondayOf(data.started || t), list = [];
+  for (let m = start; m <= t; m = addDays(m, 7)) list.push(matchFor(m, t));
+  const done = list.filter(m => m.over); let run = 0, best = 0, wins = 0;
+  done.forEach(m => { if (m.result === "win") wins++; if (m.result !== "loss") { run++; best = Math.max(best, run); } else run = 0; });
+  return { list, current: list[list.length - 1], wins, unbeaten: run, bestUnbeaten: best };
+}
+function counts() {
+  const c = { s: 0, v: 0, e: 0, p: 0 };
+  Object.values(data.log).forEach(e => { c.s += (e.s1 ? 1 : 0) + (e.s2 ? 1 : 0); c.v += Number(e.v || 0); c.e += Number(e.e || 0); c.p += Number(e.p || 0); });
+  return c;
+}
+function sectionsFor(d) {
+  const pair = weekIndex(d) % 2 === 0 ? [0, 1] : [2, 3];
+  const idx = fromIso(d).getDay() === 6 ? pair : pair.map(i => (i + 2) % 4);
+  return SECTIONS[idx[0]] + " + " + SECTIONS[idx[1]];
+}
+
+/* ============================================================
+   6b. VOCAB SCHEDULER — Anki's SM-2 variant.
+   Card state lives in data.vocab[word] = { st: "learn"|"review"|"relearn", step, iv (days), ease, due (ms), reps, lapses }
+   New cards have no entry. Learning steps 1m → 10m → graduate to 1 day; Again on a review drops it to a 10m relearn step.
+   ============================================================ */
+const MIN = 60000, DAY = 86400000;
+function vcards() { return data.vocab || (data.vocab = {}); }
+function newIntro() { return data.vocabNew || (data.vocabNew = {}); }
+function fuzz(days) { return days < 3 ? days : Math.max(1, Math.round(days * (0.95 + Math.random() * 0.1))); }
+// What each button would do, without applying it. Returns { st, step, iv, ease, due }.
+function preview(c, grade, now) {
+  c = c || { st: "learn", step: 0, iv: 0, ease: 2.5, reps: 0, lapses: 0 };
+  const steps = c.st === "relearn" ? [VOCAB.relearnStep] : VOCAB.learnSteps;
+  if (c.st === "learn" || c.st === "relearn") {
+    if (grade === 0) return { st: c.st, step: 0, iv: c.iv, ease: c.ease, due: now + steps[0] * MIN };
+    if (grade === 3) return { st: "review", step: 0, iv: c.st === "relearn" ? Math.max(1, c.iv) : VOCAB.easyIv, ease: c.ease, due: now + (c.st === "relearn" ? Math.max(1, c.iv) : VOCAB.easyIv) * DAY };
+    const next = c.step + (grade === 1 ? 0 : 1);
+    if (next < steps.length) return { st: c.st, step: next, iv: c.iv, ease: c.ease, due: now + steps[next] * MIN };
+    const iv = c.st === "relearn" ? Math.max(1, c.iv) : VOCAB.gradIv;
+    return { st: "review", step: 0, iv, ease: c.ease, due: now + iv * DAY };
+  }
+  // review card
+  if (grade === 0) return { st: "relearn", step: 0, iv: 1, ease: Math.max(VOCAB.minEase, c.ease - 0.2), due: now + VOCAB.relearnStep * MIN, lapse: true };
+  let iv, ease = c.ease;
+  if (grade === 1) { iv = Math.max(c.iv + 1, Math.round(c.iv * 1.2)); ease = Math.max(VOCAB.minEase, ease - 0.15); }
+  else if (grade === 2) iv = Math.max(c.iv + 1, Math.round(c.iv * ease));
+  else { iv = Math.max(c.iv + 1, Math.round(c.iv * ease * 1.3)); ease += 0.15; }
+  iv = Math.min(VOCAB.maxIv, fuzz(iv));
+  return { st: "review", step: 0, iv, ease, due: now + iv * DAY };
+}
+function ivLabel(p, now) { const ms = p.due - now; if (ms < 3600000) return Math.max(1, Math.round(ms / MIN)) + "m"; if (ms < DAY * 1.5) return "1d"; if (ms < DAY * 30) return Math.round(ms / DAY) + "d"; return (ms / DAY / 30).toFixed(1).replace(/\.0$/, "") + "mo"; }
+function mastered(c) { return !!c && c.st === "review" && (c.streak || 0) >= MASTER_STREAK; }
+// A "trouble" word has been missed at least twice, or missed once and still hasn't graduated.
+function trouble(c) { return !!c && ((c.lapses || 0) >= 2 || ((c.lapses || 0) >= 1 && c.st !== "review")); }
+function troubleWords() { const cards = vcards(); return WORDS.filter(w => trouble(cards[w.w])).sort((a, b) => (cards[b.w].lapses || 0) - (cards[a.w].lapses || 0)); }
+function grade(word, g, cram) {
+  const now = Date.now(), c = vcards()[word];
+  // In a trouble-words session a review card that isn't due yet keeps its schedule when he gets it right; only a miss changes anything.
+  if (cram && c && c.st === "review" && c.due > now && g > 0) { c.reps = (c.reps || 0) + 1; return; }
+  const p = preview(c, g, now);
+  // streak counts "Got it" answers on graduated cards; a miss resets it, Hard leaves it alone
+  const streak = g === 0 ? 0 : (c && c.st === "review" && g === 2) ? (c.streak || 0) + 1 : (c ? c.streak || 0 : 0);
+  vcards()[word] = { st: p.st, step: p.step, iv: p.iv, ease: p.ease, due: p.due, reps: (c ? c.reps : 0) + 1, lapses: (c ? c.lapses : 0) + (p.lapse ? 1 : 0), streak };
+  if (!c) { const t = today(); newIntro()[t] = (newIntro()[t] || 0) + 1; }
+}
+function deck() {
+  const now = Date.now(), cards = vcards(), t = today(), introduced = newIntro()[t] || 0, perDay = data.newPerDay || VOCAB.newPerDay;
+  const due = [], learn = [], known = [];
+  WORDS.forEach(w => { const c = cards[w.w]; if (!c) return; if (c.st === "review") { if (c.due <= now) due.push(w); else known.push(w); } else learn.push(w); });
+  const fresh = WORDS.filter(w => !cards[w.w]);
+  const master = WORDS.filter(w => mastered(cards[w.w]));
+  return { due, learn, fresh, known, master, newLeft: Math.max(0, perDay - introduced), introduced };
+}
+// Next card: overdue reviews first, then learning cards whose step timer has passed, then new words (within today's quota), then waiting learning cards.
+function nextTrouble(seen) {
+  const now = Date.now(), cards = vcards(), tw = troubleWords();
+  const ready = tw.filter(w => cards[w.w].st !== "review" && cards[w.w].due <= now).sort((a, b) => cards[a.w].due - cards[b.w].due);
+  if (ready.length) return { w: ready[0], kind: "trouble" };
+  const unseen = tw.filter(w => !seen.has(w.w) && !(cards[w.w].st !== "review" && cards[w.w].due > now));
+  if (unseen.length) return { w: unseen[0], kind: "trouble" };
+  const waiting = tw.filter(w => cards[w.w].st !== "review" && cards[w.w].due > now).sort((a, b) => cards[a.w].due - cards[b.w].due);
+  if (waiting.length) return { w: waiting[0], kind: "trouble", wait: cards[waiting[0].w].due - now };
+  return null;
+}
+function nextCard(extra) {
+  if (vs && vs.mode === "trouble") return nextTrouble(vs.seenSet);
+  const now = Date.now(), d = deck();
+  if (d.due.length) return { w: d.due[0], kind: "due" };
+  const ready = d.learn.filter(w => vcards()[w.w].due <= now).sort((a, b) => vcards()[a.w].due - vcards()[b.w].due);
+  if (ready.length) return { w: ready[0], kind: "learn" };
+  if (d.fresh.length && (d.newLeft > 0 || extra)) return { w: d.fresh[0], kind: "new" }; // fresh keeps file order, so one group finishes before the next begins
+  if (d.learn.length) { const soon = d.learn.slice().sort((a, b) => vcards()[a.w].due - vcards()[b.w].due)[0]; return { w: soon, kind: "learn", wait: vcards()[soon.w].due - now }; }
+  return null;
+}
+
+/* ============================================================
+   7. TROPHIES
+   ============================================================ */
+const TROPHIES = [
+  { ic: "ball",    name: "First touch",          desc: "Log your first session.",                   test: (s, c) => c.s + c.v + c.e + c.p >= 1 },
+  { ic: "clock",   name: "Full 90",              desc: "Every weekday session done in one day.",    test: s => s.days.some(d => d.full && !isWeekend(d.date)) },
+  { ic: "three",   name: "Hat-trick",            desc: "Three full days in a row.",                 test: s => s.best >= 3 },
+  { ic: "shield",  name: "Clean sheet",          desc: "Seven full days in a row.",                 test: s => s.best >= 7 },
+  { ic: "flag",    name: "Derby weekend",        desc: "Saturday and Sunday both fully done.",      test: s => s.days.some((d, i) => d.full && fromIso(d.date).getDay() === 0 && s.days[i - 1] && s.days[i - 1].full) },
+  { ic: "book",    name: "Set-piece specialist", desc: "Forty vocab reviews.",                      test: (s, c) => c.v >= 40 },
+  { ic: "pen",     name: "Playmaker",            desc: "Five essays written.",                      test: (s, c) => c.e >= 5 },
+  { ic: "target",  name: "Sharpshooter",         desc: "Twelve practice sections completed.",       test: (s, c) => c.p >= 12 },
+  { ic: "flame",   name: "On fire",              desc: "Get the flame to On fire.",                 test: s => s.form >= 75 || s.days.some(d => d.formBefore >= 75) },
+  { ic: "shirt",   name: "Starting eleven",      desc: "Reach First-Team Debut, level 5.",          test: s => s.level >= 5 },
+  { ic: "arrowup", name: "Comeback",             desc: "A full day after the flame went cold.",     test: s => { let low = false; return s.days.some(d => { if (d.formBefore < 25) low = true; return low && d.full; }); } },
+  { ic: "star",    name: "Club legend",          desc: "Reach the top level.",                      test: s => s.level >= LEVELS.length },
+  { ic: "trophy",  name: "First win",            desc: "Win a weekly match.",                       test: (s, c, m) => m.wins >= 1 },
+  { ic: "shield",  name: "Unbeaten",             desc: "Three weeks without losing a match.",       test: (s, c, m) => m.bestUnbeaten >= 3 },
+  { ic: "star",    name: "Champions",            desc: "Six weeks unbeaten.",                       test: (s, c, m) => m.bestUnbeaten >= 6 }
+];
+
+/* ============================================================
+   8. RENDER
+   ============================================================ */
+function $(id) { return document.getElementById(id); }
+function row(k, v) { return '<div class="row"><span>' + k + '</span><b>' + v + '</b></div>'; }
+function render() {
+  const t = today(), d = viewDate || t, s = season(), c = counts(), band = formBand(s.form), M = matches(), cur = M.current;
+  const daysLeft = data.testDate ? dayNum(data.testDate) - dayNum(t) : null;
+
+  $("sbDays").textContent = daysLeft === null ? "–" : daysLeft;
+  $("sbDaysCard").classList.toggle("hidden", daysLeft === null);
+  $("sbForm").innerHTML = flame(band, 22); $("sbFormLbl").textContent = band.name;
+  const bi = FORM_BANDS.indexOf(band), bonus = bi >= 2;
+  $("fdots").innerHTML = bonus ? '<span class="bonus">×' + mult(s.form).toFixed(1) + ' XP</span>' : FORM_BANDS.map((b, i) => '<i class="' + (i <= bi ? "on" : "") + '"></i>').join("");
+
+  $("greeting").textContent = (isWeekend(t) ? "Match day" : "Training day") + (data.name ? ", " + data.name : "");
+  $("greetSub").classList.toggle("hidden", daysLeft === null);
+  $("greetSub").textContent = daysLeft === null ? "" :
+    daysLeft > 1 ? "Kickoff in " + daysLeft + " days." :
+    daysLeft === 1 ? "Kickoff is tomorrow. Light session, early night." :
+    daysLeft === 0 ? "It's test day. You've done the work — go play." : "Season over. Look at that trophy cabinet.";
+
+  const editing = d !== t;
+  $("doneTitle").textContent = editing ? "Goals scored yesterday" : "Goals scored today";
+  $("pitchDate").textContent = (editing ? "Yesterday · " : "") + fmt(d);
+  $("editingNote").classList.toggle("hidden", !editing);
+  $("dayNavBtn").textContent = editing ? "Back to today" : "Forgot to log yesterday?";
+  $("dayNavBtn").classList.toggle("hidden", !editing && dayNum(t) - dayNum(data.started || t) < 1);
+  const wrap = $("tasks"), dwrap = $("doneTasks"); wrap.innerHTML = ""; dwrap.innerHTML = "";
+  planFor(d).forEach((task, i) => {
+    const n = task.count || 1, v = Math.min(n, Number(entry(d)[task.id] || 0)), done = v >= n;
+    const div = document.createElement("div"); div.className = "task c" + i + (done ? " done" : "");
+    const sub = task.id === "p" ? sectionsFor(d) : task.sub;
+    div.innerHTML =
+      '<button class="main" type="button" aria-label="' + task.label + ', ' + v + ' of ' + n + ' done">' +
+        '<span class="ring">' + (done ? ICONS.check : (n > 1 ? v + "/" + n : "")) + '</span>' +
+        '<span class="txt"><b>' + task.label + '</b><small>' + sub + '</small></span>' +
+        '<span class="pts">+' + task.pts + (n > 1 ? " each" : "") + '</span>' +
+      '</button>' +
+      '<button class="undo' + (v > 0 ? " on" : "") + '" type="button" aria-label="Undo one ' + task.label + '">' + ICONS.minus + '</button>' +
+      '<span class="bar"><i style="width:' + Math.round(100 * v / n) + '%"></i></span>';
+    div.querySelector(".main").onclick = () => change(task, d, +1);
+    div.querySelector(".undo").onclick = () => change(task, d, -1);
+    (done ? dwrap : wrap).appendChild(div);
+  });
+  if (dayProgress(d).full) wrap.innerHTML = '<div class="empty-play">Full time — every session scored<small>Keep it going tomorrow.</small></div>';
+  $("doneTitle").classList.toggle("hidden", !dwrap.children.length);
+  $("sbMatch").textContent = cur.us + " – " + cur.them;
+  $("sbMatchLbl").textContent = cur.us > cur.them ? "winning" : cur.us < cur.them ? "behind" : "this week";
+  // pitch: the player advances one step per session; the last one is the shot
+  const prd = dayProgress(d), N = prd.total, pos = Math.min(prd.done, N);
+  const x0 = 32, x1 = 296, px = prd.full ? x1 : x0 + (x1 - x0) / N * pos;
+  $("player").style.transform = "translate(" + px + "px,0)";
+  $("ball").style.transform = prd.full ? "" : "translate(" + (px + 10) + "px,0)";
+  $("pitch").classList.toggle("scored", prd.full && !$("pitch").classList.contains("shoot"));
+  const dayXp = (s.days.find(x => x.date === d) || {}).xp || 0;
+  $("goalTxt").textContent = "GOAL! +" + dayXp + " XP";
+  $("pitchSteps").textContent = prd.full ? "Scored. Every session done." : (N - pos) + " session" + (N - pos === 1 ? "" : "s") + " to the shot";
+
+  $("lvlTitle").textContent = "Level " + s.level + " · " + s.title;
+  $("xpBar").style.width = s.pct + "%";
+  $("lvlDetail").innerHTML = row("Total XP", s.xp) + (s.next ? row("Next level", s.next.title) + row("XP still needed", s.next.xp - s.xp) : row("Next level", "None — top of the table")) + row("Full days this season", s.fullDays) + row("Best run of full days", s.best);
+  $("essayCard").classList.toggle("hidden", !isWeekend(d));
+  if (isWeekend(d)) $("essayPrompt").textContent = ESSAYS[dayNum(d) % ESSAYS.length];
+
+  $("mHome").textContent = data.name || "Player";
+  $("mScore").textContent = cur.us + " – " + cur.them;
+  $("matchWhen").textContent = fmtShort(cur.monday) + " – " + fmtShort(addDays(cur.monday, 6));
+  $("matchDays").innerHTML = cur.days.map((x, i) => '<div class="md">' + DOW[i] + '<b class="' + x.v + (x.date === t ? " t" : "") + '">' + (x.v === "g" ? ICONS.ball : x.v === "x" ? "✕" : x.v === "n" ? "–" : "") + '</b></div>').join("");
+  $("mResult").innerHTML = cur.over ? '<span class="result ' + cur.result + '">' + (cur.result === "win" ? "Won the week" : cur.result === "loss" ? "Lost the week" : "Draw") + '</span>' : '<span class="result live">Match in progress · ' + (7 - cur.days.filter(x => !x.future).length) + ' day' + (7 - cur.days.filter(x => !x.future).length === 1 ? "" : "s") + ' left</span>';
+  const past = M.list.filter(m => m.over).reverse();
+  $("resultsCard").classList.toggle("hidden", !past.length);
+  $("results").innerHTML = past.map(m => '<li class="row"><span>Week of ' + fmtShort(m.monday) + '</span><span><b>' + m.us + ' – ' + m.them + '</b> <span class="result ' + m.result + '" style="margin:0 0 0 8px;padding:2px 8px">' + (m.result === "win" ? "W" : m.result === "loss" ? "L" : "D") + '</span></span></li>').join("");
+  const mon = mondayOf(t), grid = $("weekGrid"); grid.innerHTML = "";
+  DOW.forEach((lbl, i) => {
+    const dd = addDays(mon, i), p = dayProgress(dd), future = dd > t;
+    const el = document.createElement("div"); el.className = "day";
+    el.innerHTML = '<div class="d">' + lbl + '</div><div class="box ' + (future ? "future" : p.full ? "full" : p.any ? "part" : "") + (dd === t ? " today" : "") + '">' + (future ? "" : p.done + "/" + p.total) + '</div>';
+    grid.appendChild(el);
+  });
+  $("totals").innerHTML = row("Study blocks", c.s) + row("Vocab reviews", c.v) + row("Essays", c.e) + row("Practice sections", c.p) +
+    row("Full days", s.fullDays) + row("Best run of full days", s.best) + row("Total XP", s.xp);
+  $("history").innerHTML = s.days.slice().reverse().slice(0, 14).map(x =>
+    '<li class="row"><span>' + fmt(x.date) + ' · ' + x.done + '/' + x.total + (x.full ? " · full" : "") + '</span><b>+' + x.xp + '</b></li>').join("") || '<li class="row">No matches yet. Log a session on Match day.</li>';
+
+  const tw = $("trophies"); tw.innerHTML = ""; let won = 0;
+  TROPHIES.forEach(tr => {
+    const ok = tr.test(s, c, M); if (ok) won++;
+    const el = document.createElement("div"); el.className = "trophy" + (ok ? "" : " locked");
+    el.innerHTML = '<div class="ic">' + ICONS[tr.ic] + '</div><b>' + tr.name + '</b><small>' + tr.desc + '</small>';
+    tw.appendChild(el);
+  });
+  $("trophyCount").textContent = won + " of " + TROPHIES.length + " won";
+
+  const prt = dayProgress(t);
+  $("coachToday").innerHTML = row("Sessions done today", prt.done + " of " + prt.total) + row("Form", band.name) +
+    row("Level", s.level + " · " + s.title) + row("Days to test", daysLeft === null ? "not set" : daysLeft) + row("Current run of full days", s.run);
+  const dk = deck();
+  $("dkDue").textContent = dk.due.length; $("dkLearn").textContent = dk.learn.length; $("dkNew").textContent = dk.newLeft; $("dkKnown").textContent = dk.master.length;
+  $("mstreak").textContent = MASTER_STREAK;
+  const openG = new Set(Array.from(document.querySelectorAll(".grp.open")).map(el => el.dataset.g));
+  $("groups").innerHTML = GROUPS.map(g => {
+    const ws = WORDS.filter(w => w.g === g), cards = vcards();
+    const cls = w => { const c = cards[w.w]; return !c ? "" : mastered(c) ? "m" : c.st === "review" ? "r" : "l"; };
+    const n = { m: 0, r: 0, l: 0 }; ws.forEach(w => { const k = cls(w); if (k) n[k]++; });
+    const pct = k => (100 * n[k] / ws.length) + "%";
+    return '<div class="grp' + (openG.has(g) ? " open" : "") + '" data-g="' + g + '"><div class="hd"><span style="color:var(--black);font-weight:600">' + g + '</span><span>' + n.m + ' of ' + ws.length + ' mastered</span></div>' +
+      '<div class="gbar"><i class="m" style="width:' + pct("m") + '"></i><i class="r" style="width:' + pct("r") + '"></i><i class="l" style="width:' + pct("l") + '"></i></div>' +
+      '</div>';
+  }).join("");
+  document.querySelectorAll(".grp").forEach(el => el.onclick = () => popGroup(el.dataset.g));
+  const twl = troubleWords();
+  $("vTrouble").textContent = "Trouble words only" + (twl.length ? " · " + twl.length : ""); $("vTrouble").disabled = !twl.length; $("vTrouble").style.opacity = twl.length ? "1" : ".5";
+  $("troubleNote").textContent = twl.length ? "Trouble words are ones he's missed twice or more. Getting them right here doesn't move their schedule; missing them does." : "No trouble words yet — they appear once a word has been missed twice.";
+  const nextG = dk.fresh.length ? dk.fresh[0].g : null;
+  $("vocabSub").textContent = WORDS.length + " words · " + (dk.known.length + dk.learn.length + dk.due.length) + " started" + (nextG ? " · new words come from " + nextG : " · every word started");
+  if (document.activeElement !== $("newIn")) $("newIn").value = data.newPerDay || "";
+  if (document.activeElement !== $("nameIn")) $("nameIn").value = data.name || "";
+  if (document.activeElement !== $("dateIn")) $("dateIn").value = data.testDate || "";
+}
+
+/* ============================================================
+   9. ACTIONS + NAVIGATION
+   ============================================================ */
+async function change(task, d, delta) {
+  const n = task.count || 1;
+  if (!data.log[d]) data.log[d] = {};
+  const cur = Math.min(n, Number(data.log[d][task.id] || 0)), next = Math.max(0, Math.min(n, cur + delta));
+  if (next === cur) return;
+  const before = season();
+  data.log[d][task.id] = next; render();
+  if (delta > 0) {
+    const s = season(), formAtDay = (s.days.find(x => x.date === d) || {}).formBefore ?? s.form;
+    const gained = Math.round(task.pts * mult(formAtDay));
+    if (navigator.vibrate) navigator.vibrate(30);
+    const full = dayProgress(d).full, queue = [];
+    if (full) { shoot(); queue.push(() => popFullTime(d, s)); } else toast("+" + gained + " XP" + (FORM_BANDS.indexOf(formBand(formAtDay)) >= 2 ? " · form bonus" : ""));
+    if (s.level > before.level) queue.push(() => popLevelUp(s));
+    if (queue.length) setTimeout(() => runQueue(queue), full ? 1500 : 600);
+  }
+  try { await save(); } catch (err) { setSync("Couldn't save: " + err.message); }
+}
+function shoot() { const p = $("pitch"); p.classList.remove("scored"); void p.offsetWidth; p.classList.add("shoot"); setTimeout(() => { p.classList.remove("shoot"); render(); }, 2700); }
+function replay(el) { el.classList.remove("show"); void el.offsetWidth; el.classList.add("show"); }
+function toast(t) { $("toast").textContent = t; replay($("toast")); }
+/* ---- big moments: full-screen cards with a button, shown one after another ---- */
+const CONF = ["var(--yellow)", "var(--green)", "var(--light-blue)", "var(--light-red)", "var(--purple)", "var(--turq)", "var(--pink)"];
+function confetti(n) { let h = ""; for (let i = 0; i < n; i++) h += '<i class="conf" style="left:' + (4 + Math.random() * 92) + '%;background:' + CONF[i % CONF.length] + ';animation-delay:' + (Math.random() * .6) + 's;animation-duration:' + (1.3 + Math.random() * .8) + 's"></i>'; return h; }
+let popNext = null;
+function openPop(cls, html) { const p = $("pop"); p.className = "pop show " + cls; $("popBox").innerHTML = html; const b = $("popBox").querySelector(".btn"); if (b) { b.onclick = closePop; setTimeout(() => b.focus(), 50); } if (navigator.vibrate) navigator.vibrate([40, 60, 40]); }
+function closePop() { $("pop").className = "pop"; const n = popNext; popNext = null; if (n) n(); }
+function runQueue(q) { const step = q.shift(); if (!step) return; step(); popNext = q.length ? () => runQueue(q) : null; }
+function popFullTime(d, s) {
+  const day = s.days.find(x => x.date === d) || { xp: 0, done: 0, total: 0 };
+  const run = s.run || 1;
+  const m = matches().current, name = data.name || "Player";
+  openPop("fulltime", confetti(26) +
+    '<div class="kicker">' + day.done + ' of ' + day.total + ' sessions done</div><div class="title">GOAL SCORED</div>' +
+    '<div class="ringbig"><svg viewBox="0 0 112 112"><circle class="track" cx="56" cy="56" r="46"/><circle class="fill" cx="56" cy="56" r="46"/></svg><div class="mid">' + ICONS.ball + '</div></div>' +
+    '<div class="facts"><span>+' + day.xp + ' XP</span><span>' + name + ' ' + m.us + ' – ' + m.them + ' this week</span>' + (run > 1 ? '<span>' + run + ' days in a row</span>' : '') + '</div>' +
+    '<p>Every session done. Keep it going tomorrow.</p>' +
+    '<button class="btn" type="button">Done</button>');
+}
+function popLevelUp(s) {
+  openPop("levelup", confetti(34) +
+    '<div class="kicker">Promoted</div><div class="title">LEVEL UP</div>' +
+    '<div class="badge" style="background:var(--light-purple);color:var(--white)"><b style="font-size:34px">' + s.level + '</b></div>' +
+    '<div class="name">' + s.title + '</div>' +
+    '<p>' + s.xp + ' XP earned so far' + (s.next ? '. Next stop: ' + s.next.title + ' at ' + s.next.xp + ' XP.' : '. Nothing above this — top of the table.') + '</p>' +
+    '<button class="btn" type="button">Keep going</button>');
+}
+function popGroup(g) {
+  const cards = vcards(), ws = WORDS.filter(w => w.g === g);
+  const cls = w => { const c = cards[w.w]; return !c ? "" : mastered(c) ? "m" : c.st === "review" ? "r" : "l"; };
+  openPop("wordlist",
+    '<div class="kicker">' + ws.length + ' words</div><div class="title">' + g + '</div>' +
+    '<div class="wl">' + ws.map(w => '<div><i class="' + cls(w) + '"></i><div><b>' + w.w + '</b> <span>' + w.def + '</span></div>' + ((cards[w.w] || {}).lapses >= 2 ? '<small>missed ' + cards[w.w].lapses + '×</small>' : '') + '</div>').join("") + '</div>' +
+    '<button class="btn quiet" type="button">Close</button>');
+}
+function popForm() {
+  const s = season(), band = formBand(s.form), bi = FORM_BANDS.indexOf(band);
+  openPop("forminfo",
+    '<div class="kicker">Form</div><div class="title">' + band.name + '</div>' +
+    '<div class="flames" style="margin:10px 0 6px">' + FORM_BANDS.map((b, i) => '<span class="' + (i <= bi ? "lit" : "") + (i === bi ? " now" : "") + '"' + (i <= bi ? ' style="color:' + b.color + '"' : '') + '>' + flame(i <= bi ? b : { color: "var(--light-gray)" }, 14 + i * 5) + '<small>' + b.name + '</small></span>').join("") + '</div>' +
+    '<p style="margin-top:14px">' + band.text + '</p>' +
+    '<div class="facts"><span>' + (bi >= 2 ? "×" + mult(s.form).toFixed(2) + " XP on every session" : "No XP bonus yet — reach In form") + '</span></div>' +
+    '<p>Full days grow the flame. A missed day shrinks it, but it never goes out.</p>' +
+    '<button class="btn quiet" type="button">Close</button>');
+}
+$("formCell").onclick = popForm;
+$("pop").onclick = e => { if (e.target === $("pop")) closePop(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("pop").classList.contains("show")) closePop(); });
+const VIEWS = ["viewToday", "viewVocab", "viewSeason", "viewTrophies", "viewCoach"];
+function show(view) {
+  VIEWS.forEach(v => $(v).classList.toggle("hidden", v !== view));
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.view === view));
+  if (view !== "viewToday") viewDate = null;
+  if (vs && view !== "viewVocab") vStop(false);
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => show(b.dataset.view));
+$("dayNavBtn").onclick = () => { viewDate = viewDate ? null : addDays(today(), -1); render(); };
+const lc = $("levelCard"); const toggleLvl = () => { const open = lc.classList.toggle("open"); $("lvlDetail").classList.toggle("hidden", !open); lc.setAttribute("aria-expanded", String(open)); };
+lc.onclick = toggleLvl; lc.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleLvl(); } };
+$("saveBtn").onclick = async () => { data.name = $("nameIn").value.trim(); data.testDate = $("dateIn").value; data.newPerDay = Math.max(5, Math.min(100, Number($("newIn").value) || VOCAB.newPerDay)); await save(); render(); setSync("Settings saved."); };
+$("pvGoal").onclick = () => { show("viewToday"); const p = $("pitch"), pl = $("player"), b = $("ball"); pl.style.transform = "translate(296px,0)"; b.style.transform = "translate(306px,0)"; $("goalTxt").textContent = "GOAL! +120 XP"; setTimeout(shoot, 600); };
+$("pvFull").onclick = () => { const s = season(); popFullTime(today(), Object.assign({}, s, { run: Math.max(1, s.run), days: s.days.map(x => x.date === today() ? Object.assign({}, x, { done: x.total, xp: x.xp || 120 }) : x) })); };
+$("pvLevel").onclick = () => { const L = LEVELS[1]; popLevelUp({ level: 2, title: L.title, xp: L.xp + 12, next: LEVELS[2] }); };
+$("resetBtn").onclick = async () => {
+  if (!confirm("Wipe every logged session and start the season over? This can't be undone.")) return;
+  data = Object.assign(blank(), { name: data.name, testDate: data.testDate }); await save(); render(); setSync("Season reset.");
+};
+/* ---- vocab session: a 10-minute clock; when it runs out, one vocab review is ticked on Match day ---- */
+let vs = null; // { endAt, seen, right, card, shown, timer }
+function vStart(mode) {
+  vs = { mode: mode || "normal", endAt: Date.now() + VOCAB.sessionMin * MIN, seen: 0, right: 0, card: null, shown: false, extra: false, seenSet: new Set() };
+  $("vocabHome").classList.add("hidden"); $("vocabSession").classList.remove("hidden");
+  vs.timer = setInterval(vTick, 250); vNext(); vTick();
+}
+function vStop(count) {
+  clearInterval(vs.timer); const seen = vs.seen, right = vs.right; vs = null;
+  $("vocabSession").classList.add("hidden"); $("vocabHome").classList.remove("hidden");
+  if (count) {
+    const t = today(), vt = PLAN.weekday.find(x => x.id === "v");
+    const already = Number((data.log[t] || {}).v || 0);
+    if (!isWeekend(t) && already < (vt.count || 1)) { change(vt, t, +1); toast("Vocab review ticked off · " + seen + " cards"); }
+    else toast("Session done · " + seen + " cards, " + right + " right");
+  }
+  save().catch(() => {});
+}
+function vTick() {
+  if (!vs) return;
+  const left = Math.max(0, vs.endAt - Date.now()), m = Math.floor(left / MIN), sec = Math.floor((left % MIN) / 1000);
+  $("vClock").textContent = m + ":" + String(sec).padStart(2, "0"); $("vClock").classList.toggle("low", left < MIN);
+  $("vCount").textContent = vs.seen + " cards · " + vs.right + " right";
+  if (left <= 0) { vStop(true); return; }
+  if (vs.card && vs.card.wait && !vs.shown) vNext(); // a waiting learning card may have become ready
+}
+function vNext() {
+  const c = nextCard(vs.extra); vs.card = c; vs.shown = false; const f = $("flash");
+  if (!c && vs.mode === "trouble") { f.innerHTML = '<div class="kind">Trouble words</div><div class="word">Been through them all</div><p class="def">Every trouble word has had a turn this session.</p><div class="spacer"></div><button class="btn" id="vMore" type="button">Go through them again</button>'; $("vMore").onclick = () => { vs.seenSet = new Set(); vNext(); }; return; }
+  if (!c) { f.innerHTML = '<div class="kind">Deck</div><div class="word">All caught up</div><p class="def">Nothing is due and today\'s new words are done.</p><div class="spacer"></div><button class="btn" id="vMore" type="button">Learn extra new words</button>'; $("vMore").onclick = () => { vs.extra = true; vNext(); }; return; }
+  if (c.wait) { const secs = Math.ceil(c.wait / 1000); f.innerHTML = '<div class="kind learn">Learning</div><div class="word">' + c.w.w + '</div><p class="def">Comes back in ' + (secs < 60 ? secs + "s" : Math.ceil(secs / 60) + " min") + '.</p><div class="spacer"></div><button class="btn quiet" id="vMore" type="button">Learn extra new words instead</button>'; $("vMore").onclick = () => { vs.extra = true; vNext(); }; return; }
+  const kindLbl = { due: "Review", learn: "Learning", new: "New word · " + c.w.g, trouble: "Trouble word · missed " + (vcards()[c.w.w].lapses || 0) + "×" }[c.kind];
+  f.innerHTML = '<div class="kind ' + c.kind + '">' + kindLbl + '</div><div class="word">' + c.w.w + '</div><div class="pos">' + c.w.pos + '</div><div class="spacer"></div><button class="btn" id="vShow" type="button">Show meaning</button>';
+  $("vShow").onclick = vShow;
+}
+function vShow() {
+  const c = vs.card, now = Date.now(), cur = vcards()[c.w.w]; vs.shown = true;
+  const btn = (g, cls, lbl) => '<button class="' + cls + '" data-g="' + g + '" type="button">' + lbl + '<small>' + ivLabel(preview(cur, g, now), now) + '</small></button>';
+  $("flash").innerHTML = '<div class="kind ' + c.kind + '">' + c.w.w + ' · ' + c.w.pos + '</div><p class="def">' + c.w.def + '</p><p class="ex">' + c.w.ex + '</p><div class="spacer"></div>' +
+    '<div class="grades" style="width:100%">' + btn(0, "again", "Missed it") + btn(1, "hard", "Hard") + btn(2, "good", "Got it") + '</div>';
+  document.querySelectorAll("#flash .grades button").forEach(b => b.onclick = () => { const g = +b.dataset.g; grade(c.w.w, g, vs.mode === "trouble"); vs.seenSet.add(c.w.w); vs.seen++; if (g >= 2) vs.right++; render(); vNext(); vTick(); if (vs.seen % 5 === 0) save().catch(() => {}); });
+}
+$("vStart").onclick = () => vStart("normal"); $("vTrouble").onclick = () => { if (troubleWords().length) vStart("trouble"); }; $("vQuit").onclick = () => vStop(false);
+document.addEventListener("keydown", e => { if (!vs) return; if (e.key === " " && !vs.shown && $("vShow")) { e.preventDefault(); vShow(); } if (vs.shown && /^[1-3]$/.test(e.key)) { const b = document.querySelector('#flash .grades button[data-g="' + (Number(e.key) - 1) + '"]'); if (b) b.click(); } });
+
+function familyLink() { return location.origin + location.pathname + "?code=" + encodeURIComponent(code); }
+function newCode() { const a = "abcdefghjkmnpqrstuvwxyz23456789"; let c = ""; for (let i = 0; i < 16; i++) c += a[Math.floor(Math.random() * a.length)]; return c.replace(/(.{4})(?=.)/g, "$1-"); }
+function cleanCode(v) { return v.trim().toLowerCase().replace(/[^a-z0-9-]/g, ""); }
+function enter(c) { code = c; lsSet("tg_code", code); if (location.search) history.replaceState(null, "", location.pathname); boot(); }
+function boot() {
+  const fromLink = cleanCode(new URLSearchParams(location.search).get("code") || "");
+  if (fromLink.length >= CODE_MIN) { enter(fromLink); return; }
+  const locked = !code;
+  $("setup").classList.toggle("hidden", !locked); document.querySelector(".tabs").classList.toggle("hidden", locked);
+  VIEWS.forEach(v => $(v).classList.toggle("hidden", locked || v !== "viewToday"));
+  if (locked) return;
+  $("codeShow").textContent = code; $("playerLink").textContent = familyLink();
+  render(); load();
+}
+$("codeGo").onclick = () => { const c = cleanCode($("codeIn").value); if (c.length < CODE_MIN) { $("codeMsg").textContent = "That code looks too short. Ask the coach for the link."; return; } enter(c); };
+$("codeNew").onclick = () => enter(newCode());
+$("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText(familyLink()); $("copyBtn").textContent = "Copied"; setTimeout(() => $("copyBtn").textContent = "Copy the link", 1500); } catch (e) { $("copyBtn").textContent = "Select the link above and copy it"; } };
+$("verShow").textContent = APP_VERSION;
+$("updateBtn").onclick = () => { location.href = location.pathname + "?v=" + Date.now(); }; // forces a fresh copy of the file; data and code are untouched
+$("signOut").onclick = () => { if (!confirm("Forget the family code on this phone? Nothing is deleted — you'll just need the link again to get back in.")) return; if (unsub) unsub(); lsDel("tg_code"); code = ""; boot(); };
+boot();
+setInterval(() => { if (code) render(); }, 60000); // rolls "today" over at midnight without a refresh
+</script>
+</body>
+</html>
