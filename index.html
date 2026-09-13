@@ -381,12 +381,14 @@
     <div id="tasks"></div>
     <h2 id="doneTitle" class="hidden">Goals scored today</h2>
     <div id="doneTasks"></div>
+    <p class="status-line" id="extraNote" style="text-align:center;margin:0"></p>
     <div class="daynav"><button id="dayNavBtn" type="button">Forgot to log yesterday?</button></div>
     <div class="card lvl" id="levelCard" role="button" tabindex="0" aria-expanded="false">
       <h3><span id="lvlTitle">Level 1 · Trialist</span><span class="r">Details <span class="chev">&#9662;</span></span></h3>
       <div class="meter"><i id="xpBar" style="width:0%;background:var(--purple)"></i></div>
       <div id="lvlDetail" class="hidden"></div>
     </div>
+    <div class="daynav"><button id="seasonLink" type="button">View the season &#9656;</button></div>
   </section>
 
   <section id="viewVocab" class="hidden">
@@ -402,22 +404,30 @@
       </div>
       <div class="card"><h3>Groups <span class="r">tap one for its list</span></h3><div id="groups"></div></div>
     </div>
-    <div class="card hidden" id="shootCard">
-      <h3>Shootout <button class="info" id="soInfo" type="button" aria-label="How it works">i</button></h3>
-      <p style="margin:0" id="soBlurb">Five shots. The definition comes up, you type the word. Only words you've mastered take the field.</p>
-      <div class="btnrow"><button class="btn" id="soStart" type="button">Take five shots</button></div>
-      <p class="status-line" id="soStats"></p>
-    </div>
-    <div id="shootSession" class="hidden">
-      <div class="so-pitch" id="soPitch"></div>
-      <div class="so-shots" id="soShots"></div>
-      <div class="flash" id="soFlash" style="min-height:200px"></div>
-      <div class="daynav"><button id="soQuit" type="button">Leave the shootout</button></div>
-    </div>
     <div id="vocabSession" class="hidden">
       <div class="timerbar"><div class="t" id="vClock">10:00</div><div class="n" id="vCount"></div></div>
       <div class="flash" id="flash"></div>
       <div class="daynav"><button id="vQuit" type="button">Stop early (doesn't count)</button></div>
+    </div>
+  </section>
+  <section id="viewShoot" class="hidden">
+    <h1>Shootout</h1>
+    <p class="sub" id="soSub"></p>
+    <div id="shootHome">
+      <div class="deck"><div class="due"><b id="soKgoals">0</b><span>goals</span></div><div class="learn"><b id="soKshots">0</b><span>shots</span></div><div class="new"><b id="soKwon">0</b><span>rounds won</span></div><div><b id="soKlost">0</b><span>rounds lost</span></div></div>
+      <div class="card">
+        <h3>10-minute shootout <button class="info" id="soInfo" type="button" aria-label="How it works">i</button></h3>
+        <p style="margin:0">Rounds of five shots until the clock runs out. Score 3 or more in a round and Leo gets a point; fewer and the opposition does. When the clock runs out, one of the day's four 10-minute reviews is checked off.</p>
+        <div class="btnrow"><button class="btn" id="soClock" type="button">Start the clock</button><button class="btn quiet" id="soStart" type="button">Just five shots</button></div>
+        <p class="status-line" id="soStats"></p>
+      </div>
+    </div>
+    <div id="shootSession" class="hidden">
+      <div class="timerbar" id="soTimerbar"><div class="t" id="soClockTxt">10:00</div><div class="n" id="soScoreTxt"></div></div>
+      <div class="so-pitch" id="soPitch"></div>
+      <div class="so-shots" id="soShots"></div>
+      <div class="flash" id="soFlash" style="min-height:200px"></div>
+      <div class="daynav"><button id="soQuit" type="button">Leave the shootout (doesn't count)</button></div>
     </div>
   </section>
   <section id="viewSent" class="hidden">
@@ -439,13 +449,14 @@
   </section>
   <section id="viewSeason" class="hidden">
     <h1>Season</h1>
-    <p class="sub">Green is a full day. Yellow is a partial day.</p>
+    <p class="sub">Green is a full day. Yellow is a partial day. <button class="btn quiet" id="seasonBack" type="button" style="margin:8px 0 0;padding:6px 10px;font-size:13px">&#9666; Match day</button></p>
     <div class="card">
       <h3>This week's match <span class="r" id="matchWhen"></span></h3>
       <div class="scoreline"><span class="team" id="mHome">Leo</span><span class="score" id="mScore">0 – 0</span><span class="team r">The Opposition</span></div>
       <div class="matchdays" id="matchDays"></div>
       <div id="mResult"></div>
-      <p style="margin-top:10px">A full day scores for Leo. Any day that isn't finished scores for the opposition.</p>
+      <div id="mBonus" style="margin-top:6px"></div>
+      <p style="margin-top:10px">A full day scores for Leo. Any day that isn't finished scores for the opposition. Six 10-minute sessions beyond the daily four, in any mode, earn one bonus shot a week.</p>
     </div>
     <div class="card"><h3>Sessions this week</h3><div class="week" id="weekGrid"></div></div>
     <div class="card" id="resultsCard"><h3>Past matches</h3><ul class="history results" id="results"></ul></div>
@@ -469,6 +480,7 @@
       <div class="field"><label for="nameIn">Player name</label><input id="nameIn" placeholder="First name or nickname"></div>
       <div class="field"><label for="dateIn">Test date</label><input id="dateIn" type="date"></div>
       <div class="field"><label for="newIn">New vocab words per day</label><input id="newIn" type="number" min="5" max="100" placeholder="20"></div>
+      <div class="field"><label>Developer mode</label><button class="btn quiet" id="devBtn" type="button" style="margin-top:0">Off</button><p class="status-line">Adds a "Practice this group" button to every vocab and math group, so you can try any group's cards on demand. Practice runs don't tick a review; misses still count toward trouble words.</p></div>
       <div class="field"><label>Tap sound</label><div class="btnrow"><button class="btn quiet" id="soundBtn" type="button" style="margin-top:0">Sound on</button><button class="btn quiet" id="soundTest" type="button" style="margin-top:0">Play test sound</button></div><p class="status-line" id="soundMsg"></p></div>
       <button class="btn" id="saveBtn" type="button">Save settings</button>
     </div>
@@ -487,7 +499,7 @@
         <button class="btn quiet" id="pvGoal" type="button">Score the winner</button>
         <button class="btn quiet" id="pvFull" type="button">Full time</button>
         <button class="btn quiet" id="pvLevel" type="button">Level up</button>
-        <button class="btn quiet" id="pvShoot" type="button">Shootout (any words)</button>
+        <button class="btn quiet" id="pvShoot" type="button">Timed shootout (any words)</button>
       </div>
     </div>
     <div class="card">
@@ -503,7 +515,7 @@
   <button class="tab" data-view="viewVocab" data-deck="vocab" type="button"><span class="ic" data-icon="book"></span>Vocab</button>
   <button class="tab" data-view="viewVocab" data-deck="math" type="button"><span class="ic" data-icon="target"></span>Math</button>
   <button class="tab" data-view="viewSent" type="button"><span class="ic" data-icon="pen"></span>Sentences</button>
-  <button class="tab" data-view="viewSeason" type="button"><span class="ic" data-icon="calendar"></span>Season</button>
+  <button class="tab" data-view="viewShoot" type="button"><span class="ic" data-icon="flag"></span>Shootout</button>
   <button class="tab" data-view="viewTrophies" type="button"><span class="ic" data-icon="trophy"></span>Trophies</button>
   <button class="tab" data-view="viewCoach" type="button"><span class="ic" data-icon="clipboard"></span>Coach</button>
 </div></nav>
@@ -521,7 +533,7 @@
 /* ============================================================
    1. VERSION + CONFIG — the Firebase config is read from config.js (see SETUP.md), never pasted here.
    ============================================================ */
-const APP_VERSION = "2026-09-13.1";
+const APP_VERSION = "2026-09-13.6";
 const firebaseConfig = window.firebaseConfig || null;
 // The family code is the password: it's the Firestore record name, it's never written into this file, and it only travels in the link you share.
 const mem = {};
@@ -1267,7 +1279,6 @@ Slope formula?|formula|m = (y₂ − y₁) ÷ (x₂ − x₁)|Rise over run.
 Slope-intercept form?|formula|y = mx + b|m is the slope, b is where the line crosses the y-axis.
 Point-slope form?|formula|y − y₁ = m(x − x₁)|Use it when you know the slope and one point.
 Standard form of a line?|formula|Ax + By = C|x and y on the same side, a number on the other.
-Quadratic formula?|formula|x = (−b ± √(b² − 4ac)) ÷ 2a|For ax² + bx + c = 0.
 Order of operations?|rule|PEMDAS: Parentheses, Exponents, Multiply & Divide (left to right), Add & Subtract (left to right).|Multiply/divide are a pair; so are add/subtract.
 # Exponent rules
 x^a × x^b = ?|rule|x^(a + b)|Same base, multiply: add the exponents.
@@ -1341,6 +1352,33 @@ Column A: 3⁴ · Column B: 4³|drill|A, Column A is bigger|3⁴ = 81 and 4³ = 
 Column A: x · Column B: x² · x can be any number|drill|D|Try x = 2: A is 2, B is 4, so B is bigger. Try x = ½: A is ½, B is ¼, so A is bigger. Different results, so D.
 Column A: x + 5 · Column B: x + 3 · x can be any number|drill|A, Column A is bigger|Whatever x is, Column A adds 5 and Column B adds 3. Adding 5 always gives more. Try x = 10: 15 and 13.
 Column A: 2x · Column B: x + x|drill|C, they're equal|2x means x + x. They're the same for every x. Try x = 3: 6 and 6.
+# Word problem clues
+First step on any word problem?|strategy|Write every number from the problem off to the side, then cross out any that aren't needed.|Numbers are easier to see away from the sentences.
+Where do you find the operation to use?|strategy|In the clue words: in the information given, or in the question itself.|"Reduced by" in the setup, or "how many are left" in the question.
+"increased by" means…|word clue|Add.|The price was increased by $30: 55 + 30.
+"decreased by" or "reduced by" means…|word clue|Subtract.|$55 reduced by $20 is 55 − 20 = 35.
+"times" or "multiplied by" means…|word clue|Multiply.|20 jackets at $35 each: 20 × 35.
+"decreased by a factor of" means…|word clue|Divide by that number.|Decreased by a factor of 4: divide by 4.
+"is", "are", "were" or "will be" means…|word clue|Equals.|"The answer is 12": = 12.
+"more than" means…|word clue|Add.|5 more than 12 is 12 + 5 = 17.
+"less than" or "fewer than" means…|word clue|Subtract, and watch the order.|5 less than 12 is 12 − 5 = 7, not 5 − 12.
+"product of" means…|word clue|Multiply.|The product of 6 and 7 is 42.
+"quotient" means…|word clue|Divide.|The quotient of 20 and 4 is 5.
+"equals", "gives", "yields" or "result" means…|word clue|Equals.|"Yields 40": = 40.
+"combined" or "together" means…|word clue|Add.|Two bags of 6 and 8 combined: 6 + 8 = 14.
+"difference" or "minus" means…|word clue|Subtract.|The difference between 20 and 8 is 12.
+"twice" means…|word clue|Multiply by 2.|Twice $10 is $20.
+"divided equally among" means…|word clue|Divide.|350 bags among 70 students: 350 ÷ 70 = 5 each.
+"sells for", "sold for" or "given" means…|word clue|Equals.|"Each jacket sells for $24": = 24.
+"total of", "sum" or "in all" means…|word clue|Add.|The sum of 4 and 9 is 13.
+"are left" means…|word clue|Subtract.|Had 10, gave away 3, 7 are left.
+"increased by a factor of" means…|word clue|Multiply by that number.|Increased by a factor of 3: multiply by 3.
+"per" means…|word clue|Divide.|Miles per hour: miles ÷ hours.
+"ultimately ends in" means…|word clue|Equals; it's the final answer.|"Ultimately ends in 9": = 9.
+"older than", "farther than" or "greater than" means…|word clue|Add.|Three years older than 12 is 12 + 3 = 15.
+"half" means…|word clue|Divide by 2.|Half of 30 is 15.
+"ratio of" or "out of" means…|word clue|Divide, written as a fraction.|3 out of 4 is 3⁄4.
+"percent" means…|word clue|Out of 100, so divide by 100.|35% is 35 ÷ 100 = 0.35.
 # Fractions, decimals & percents
 1/2 = ?|convert|0.5 = 50%|
 1/3 = ?|convert|0.333… = 33.3%|
@@ -2119,9 +2157,16 @@ function judgeShot(answer, word) {
   for (const t of targets) if (closeEnough(answer, t)) return { ok: true, exact: normWord(answer) === normWord(t) && answer.trim().toLowerCase() === t, via: t };
   return { ok: false };
 }
-function shootPool() { const cards = data.vocab || {}; return DECKS.vocab.items.filter(w => mastered(cards[w.w])); }
-function shootUnlocked() { return deckStats("vocab").groupsDone >= 1; }
+// Squad: mastered words once there are five of them; until then graduated words, or anything started.
+function shootSquad() {
+  const cards = data.vocab || {}, items = DECKS.vocab.items;
+  const m = items.filter(w => mastered(cards[w.w])); if (m.length >= 5) return { words: m, kind: "mastered" };
+  const r = items.filter(w => cards[w.w] && cards[w.w].st === "review"); if (r.length >= 5) return { words: r, kind: "graduated" };
+  const st = items.filter(w => cards[w.w]); if (st.length >= 5) return { words: st, kind: "started" };
+  return { words: items.slice(0, 40), kind: "warmup" };
+}
 function shootStats() { return data.shoot || (data.shoot = {}); }
+function shootTotals() { const st = shootStats(); const t = Object.values(st).reduce((a, r) => ({ s: a.s + (r.shots || 0), g: a.g + (r.goals || 0) }), { s: 0, g: 0 }); const rd = data.shootRounds || { won: 0, lost: 0, perfect: 0, best: 0, sessionsWon: 0, sessionsLost: 0 }; return Object.assign(t, rd); }
 
 // Parses "# Group" headers and "front|hint|back|extra" lines. Duplicates (by front) are skipped.
 function parseDeck(text, lower) {
@@ -2273,8 +2318,10 @@ function dayVerdict(d, t) {
 function matchFor(monday, t) {
   const start = data.started || t; let us = 0, them = 0, days = [];
   for (let i = 0; i < 7; i++) { const d = addDays(monday, i); let v = ""; if (d >= start && d <= t) v = dayVerdict(d, t); if (v === "g") us++; if (v === "x") them++; days.push({ date: d, v, future: d > t }); }
+  let extras = 0; for (let i = 0; i < 7; i++) extras += Number((data.log[addDays(monday, i)] || {}).x || 0);
+  const bonus = extras >= BONUS_EXTRAS ? 1 : 0; us += bonus;
   const over = addDays(monday, 6) < t;
-  return { monday, us, them, days, over, result: !over ? "live" : us > them ? "win" : us < them ? "loss" : "draw" };
+  return { monday, us, them, days, over, extras, bonus, result: !over ? "live" : us > them ? "win" : us < them ? "loss" : "draw" };
 }
 function matches() {
   const t = today(), start = mondayOf(data.started || t), list = [];
@@ -2358,7 +2405,14 @@ function nextTrouble(seen) {
   if (tw.length) { seen.clear(); if (vs) toast("Going round again"); const soon = tw.slice().sort((a, b) => (cards[a.w].due || 0) - (cards[b.w].due || 0))[0]; seen.add(soon.w); return { w: soon, kind: "trouble" }; }
   return null;
 }
+function nextGroup(g, seen) {
+  const now = Date.now(), cards = vcards(), ws = D.items.filter(w => w.g === g);
+  const ready = ws.filter(w => cards[w.w] && cards[w.w].st !== "review" && cards[w.w].due <= now); if (ready.length) return { w: ready[0], kind: "learn" };
+  const unseen = ws.filter(w => !seen.has(w.w)); if (unseen.length) return { w: unseen[0], kind: cards[unseen[0].w] ? (cards[unseen[0].w].st === "review" ? "due" : "learn") : "new" };
+  seen.clear(); if (vs) toast("Going round again"); const w = ws[0]; seen.add(w.w); return { w, kind: cards[w.w] ? "due" : "new" };
+}
 function nextCard() {
+  if (vs && vs.mode === "group") return nextGroup(vs.group, vs.seenSet);
   if (vs && vs.mode === "trouble") return nextTrouble(vs.seenSet);
   const now = Date.now(), d = deck();
   if (d.due.length) return { w: d.due[0], kind: "due" };
@@ -2430,13 +2484,16 @@ const TROPHIES = [
   { cat: "Match day", tier: 2, ic: "target",  name: "Sharpshooter",       desc: "Twelve practice sections completed.",              test: (s, c) => c.p >= 12 },
   { cat: "Match day", tier: 3, ic: "book",    name: "Set-Piece Specialist", desc: "Forty 10-minute reviews.",                       test: (s, c) => c.v >= 40 },
   // Form & streaks
+  { cat: "Form", tier: 1, ic: "flame",   name: "Warming Up",         desc: "Get the flame to In form.",                        test: s => s.form >= 50 || s.days.some(d => d.formBefore >= 50) },
   { cat: "Form", tier: 1, ic: "three",   name: "Hat-Trick",          desc: "Three full days in a row.",                        test: s => s.best >= 3 },
   { cat: "Form", tier: 2, ic: "flame",   name: "On Fire",            desc: "Get the flame to On fire.",                        test: s => s.form >= 75 || s.days.some(d => d.formBefore >= 75) },
   { cat: "Form", tier: 2, ic: "arrowup", name: "The Comeback",       desc: "A full day after the flame went cold.",            test: s => { let low = false; return s.days.some(d => { if (d.formBefore < 25) low = true; return low && d.full; }); } },
   { cat: "Form", tier: 3, ic: "shield",  name: "Clean Sheet",        desc: "Seven full days in a row.",                        test: s => s.best >= 7 },
   { cat: "Form", tier: 4, ic: "flame",   name: "Iron Man",           desc: "Twenty-one full days in a row.",                   test: s => s.best >= 21 },
   // Season
+  { cat: "Season", tier: 1, ic: "calendar", name: "Opening Day",       desc: "Finish your first full week.",                     test: (s, c, m) => m.list.filter(x => x.over).length >= 1 },
   { cat: "Season", tier: 1, ic: "trophy",  name: "First Win",          desc: "Win a weekly match.",                              test: (s, c, m) => m.wins >= 1 },
+  { cat: "Season", tier: 2, ic: "ball",    name: "Thrashing",          desc: "Win a week by three goals or more.",               test: (s, c, m) => m.list.some(x => x.over && x.us - x.them >= 3) },
   { cat: "Season", tier: 2, ic: "shield",  name: "Unbeaten",           desc: "Three weeks without losing a match.",              test: (s, c, m) => m.bestUnbeaten >= 3 },
   { cat: "Season", tier: 3, ic: "star",    name: "Champions",          desc: "Six weeks unbeaten.",                              test: (s, c, m) => m.bestUnbeaten >= 6 },
   { cat: "Season", tier: 4, ic: "trophy",  name: "Invincibles",        desc: "Win six weekly matches without conceding a goal.", test: (s, c, m) => m.list.filter(x => x.over && x.result === "win" && x.them === 0).length >= 6 },
@@ -2453,19 +2510,27 @@ const TROPHIES = [
   // Math
   { cat: "Math", tier: 1, ic: "target",  name: "First Fact",         desc: "Master your first math fact.",                     test: (s, c, m, V) => V.math.master >= 1 },
   { cat: "Math", tier: 1, ic: "three",   name: "Rule of Three",      desc: "Three facts mastered.",                            test: (s, c, m, V) => V.math.master >= 3 },
+  { cat: "Math", tier: 1, ic: "book",    name: "Ten Facts",          desc: "Ten facts mastered.",                              test: (s, c, m, V) => V.math.master >= 10 },
   { cat: "Math", tier: 2, ic: "flag",    name: "Formula One",        desc: "Master every fact in one group.",                  test: (s, c, m, V) => V.math.groupsDone >= 1 },
   { cat: "Math", tier: 2, ic: "clock",   name: "Quick Twenty-Five",  desc: "Twenty-five facts mastered.",                      test: (s, c, m, V) => V.math.master >= 25 },
   { cat: "Math", tier: 2, ic: "arrowup", name: "Second Look",        desc: "Master a fact you'd missed twice or more.",        test: (s, c, m, V) => V.math.comeback >= 1 },
   { cat: "Math", tier: 3, ic: "target",  name: "Fifty Facts",        desc: "Fifty facts mastered.",                            test: (s, c, m, V) => V.math.master >= 50 },
   { cat: "Math", tier: 3, ic: "star",    name: "Full Marks",         desc: "Every math group mastered.",                       test: (s, c, m, V) => V.math.groupsDone >= V.math.groups },
   { cat: "Math", tier: 4, ic: "target",  name: "Flawless",           desc: "Every math fact mastered without a single miss.",  test: (s, c, m, V) => V.math.master >= V.math.total && V.math.flawless },
+  // Shootout
+  { cat: "Shootout", tier: 1, ic: "ball",    name: "Off the Mark",      desc: "Score your first shootout goal.",                 test: (s, c, m, V, S) => S.g >= 1 },
+  { cat: "Shootout", tier: 1, ic: "three",   name: "Hat-Trick Hero",    desc: "Score three in one round.",                       test: (s, c, m, V, S) => S.best >= 3 },
+  { cat: "Shootout", tier: 2, ic: "star",    name: "Perfect Five",      desc: "Score all five in a round.",                      test: (s, c, m, V, S) => S.perfect >= 1 },
+  { cat: "Shootout", tier: 2, ic: "trophy",  name: "Shootout Winner",   desc: "Win a ten-minute shootout.",                      test: (s, c, m, V, S) => S.sessionsWon >= 1 },
+  { cat: "Shootout", tier: 3, ic: "target",  name: "Clinical",          desc: "Fifty shootout goals.",                           test: (s, c, m, V, S) => S.g >= 50 },
+  { cat: "Shootout", tier: 4, ic: "shirt",   name: "Golden Boot",       desc: "Two hundred shootout goals.",                     test: (s, c, m, V, S) => S.g >= 200 },
   // Rank
   { cat: "Rank", tier: 2, ic: "shirt",   name: "Starting Eleven",    desc: "Reach First-Team Debut, level 5.",                 test: s => s.level >= 5 },
   { cat: "Rank", tier: 3, ic: "star",    name: "Club Legend",        desc: "Reach the top level.",                             test: s => s.level >= LEVELS.length },
   { cat: "Rank", tier: 4, ic: "shirt",   name: "Ballon d'Or",        desc: "Top level, six weeks unbeaten, and a hundred words mastered.", test: (s, c, m, V) => s.level >= LEVELS.length && m.bestUnbeaten >= 6 && V.vocab.master >= 100 }
 ];
 const TIER = { 1: { name: "Bronze", color: "var(--red)" }, 2: { name: "Silver", color: "var(--blue)" }, 3: { name: "Gold", color: "var(--yellow)" }, 4: { name: "Diamond", color: "var(--turq)" } };
-const CABINETS = ["Match day", "Form", "Season", "Vocab", "Math", "Rank"];
+const CABINETS = ["Match day", "Form", "Season", "Vocab", "Math", "Shootout", "Rank"];
 
 /* ============================================================
    8. RENDER
@@ -2514,6 +2579,8 @@ function render() {
   });
   if (dayProgress(d).full) wrap.innerHTML = '<div class="empty-play">Full time — every session scored<small>Keep it going tomorrow.</small></div>';
   $("doneTitle").classList.toggle("hidden", !dwrap.children.length);
+  const xw = extrasThisWeek(t), curM = matches().current;
+  $("extraNote").textContent = xw || curM.bonus ? (curM.bonus ? "Bonus shot scored this week." : "Extra sessions this week: " + xw + " of " + BONUS_EXTRAS + " toward a bonus shot.") : "";
   $("sbMatch").textContent = cur.us + " – " + cur.them;
   $("sbMatchLbl").textContent = cur.us > cur.them ? "winning" : cur.us < cur.them ? "behind" : "this week";
   // pitch: the player advances one step per session; the last one is the shot
@@ -2534,6 +2601,7 @@ function render() {
   $("mScore").textContent = cur.us + " – " + cur.them;
   $("matchWhen").textContent = fmtShort(cur.monday) + " – " + fmtShort(addDays(cur.monday, 6));
   $("matchDays").innerHTML = cur.days.map((x, i) => '<div class="md">' + DOW[i] + '<b class="' + x.v + (x.date === t ? " t" : "") + '">' + (x.v === "g" ? ICONS.ball : x.v === "x" ? "✕" : x.v === "n" ? "–" : "") + '</b></div>').join("");
+  $("mBonus").innerHTML = cur.bonus ? '<span class="result win">Bonus shot scored · +1</span>' : '<span class="result live">Bonus shot: ' + cur.extras + ' of ' + BONUS_EXTRAS + ' extra sessions</span>';
   $("mResult").innerHTML = cur.over ? '<span class="result ' + cur.result + '">' + (cur.result === "win" ? "Won the week" : cur.result === "loss" ? "Lost the week" : "Draw") + '</span>' : '<span class="result live">Match in progress · ' + (7 - cur.days.filter(x => !x.future).length) + ' day' + (7 - cur.days.filter(x => !x.future).length === 1 ? "" : "s") + ' left</span>';
   const past = M.list.filter(m => m.over).reverse();
   $("resultsCard").classList.toggle("hidden", !past.length);
@@ -2550,13 +2618,13 @@ function render() {
   $("history").innerHTML = s.days.slice().reverse().slice(0, 14).map(x =>
     '<li class="row"><span>' + fmt(x.date) + ' · ' + x.done + '/' + x.total + (x.full ? " · full" : "") + '</span><b>+' + x.xp + '</b></li>').join("") || '<li class="row">No matches yet. Log a session on Match day.</li>';
 
-  const V = { vocab: deckStats("vocab"), math: deckStats("math") };
-  const won = TROPHIES.filter(tr => tr.test(s, c, M, V)).length, byTier = t => TROPHIES.filter(tr => tr.tier === t), wonTier = t => byTier(t).filter(tr => tr.test(s, c, M, V)).length;
+  const V = { vocab: deckStats("vocab"), math: deckStats("math") }, ST = shootTotals();
+  const won = TROPHIES.filter(tr => tr.test(s, c, M, V, ST)).length, byTier = t => TROPHIES.filter(tr => tr.tier === t), wonTier = t => byTier(t).filter(tr => tr.test(s, c, M, V, ST)).length;
   $("tally").innerHTML = [1, 2, 3, 4].map(t => '<span><b>' + wonTier(t) + '/' + byTier(t).length + '</b><i style="background:' + TIER[t].color + '"></i>' + TIER[t].name + '</span>').join("");
-  $("cabinets").innerHTML = CABINETS.map(cat => { const list = TROPHIES.filter(tr => tr.cat === cat); const got = list.filter(tr => tr.test(s, c, M, V)).length;
-    return '<div class="cab"><h2>' + cat + '<span>' + got + ' of ' + list.length + '</span></h2><div class="shelf">' + list.map(tr => { const ok = tr.test(s, c, M, V);
+  $("cabinets").innerHTML = CABINETS.map(cat => { const list = TROPHIES.filter(tr => tr.cat === cat); const got = list.filter(tr => tr.test(s, c, M, V, ST)).length;
+    return '<div class="cab"><h2>' + cat + '<span>' + got + ' of ' + list.length + '</span></h2><div class="shelf">' + list.map(tr => { const ok = tr.test(s, c, M, V, ST);
       return '<button class="medal' + (ok ? "" : " locked") + (tr.tier === 3 ? " gold" : tr.tier === 4 ? " diamond" : "") + '" type="button" data-t="' + tr.name + '" style="--tier:' + TIER[tr.tier].color + '"><span class="disc">' + ICONS[tr.ic] + '</span><b>' + tr.name + '</b><small>' + TIER[tr.tier].name + '</small></button>'; }).join("") + '</div></div>'; }).join("");
-  document.querySelectorAll(".medal").forEach(el => el.onclick = () => popMedal(el.dataset.t, s, c, M, V));
+  document.querySelectorAll(".medal").forEach(el => el.onclick = () => popMedal(el.dataset.t, s, c, M, V, ST));
   $("trophyCount").textContent = won + " of " + TROPHIES.length + " won";
 
   const prt = dayProgress(t);
@@ -2579,14 +2647,15 @@ function render() {
   const tile = x => { const [num, ...rest] = x.g.split(" · "); const pct = k => (100 * x.n[k] / x.ws.length) + "%";
     return '<button class="grp' + (x.g === nowG ? " now" : "") + '" data-g="' + x.g + '" type="button"><b>' + num + '</b><small>' + (rest.join(" · ") || "&nbsp;") + '</small>' +
       '<span class="gbar"><i class="m" style="width:' + pct("m") + '"></i><i class="r" style="width:' + pct("r") + '"></i><i class="l" style="width:' + pct("l") + '"></i></span><div class="n">' + x.n.m + ' of ' + x.ws.length + ' mastered</div></button>'; };
-  const sec = (label, list, key) => { if (!list.length) return ""; const open = vocabOpen[key];
+  const sec = (label, list, key) => { if (!list.length) return ""; const open = vocabOpen[key] || lsGet("tg_dev") === "on";
     return '<div class="gsec"><span>' + label + ' · ' + list.length + '</span>' + (key ? '<button type="button" data-sec="' + key + '">' + (open ? "Hide" : "Show") + '</button>' : "") + '</div>' + (!key || open ? '<div class="ggrid">' + list.map(tile).join("") + '</div>' : ""); };
   $("groups").innerHTML = sec("In progress", info.filter(x => x.state === "active"), null) + sec("Mastered", info.filter(x => x.state === "done"), "done") + sec("Not started", info.filter(x => x.state === "todo"), "todo") || '<p style="margin:0">No groups yet.</p>';
   document.querySelectorAll("#groups [data-sec]").forEach(b => b.onclick = () => { vocabOpen[b.dataset.sec] = !vocabOpen[b.dataset.sec]; render(); });
   document.querySelectorAll(".grp").forEach(el => el.onclick = () => popGroup(el.dataset.g));
-  const canShoot = D.id === "vocab" && shootUnlocked(), soS = shootStats();
-  $("shootCard").classList.toggle("hidden", !canShoot);
-  if (canShoot) { const tot = Object.values(soS).reduce((a, r) => ({ s: a.s + (r.shots || 0), g: a.g + (r.goals || 0) }), { s: 0, g: 0 }); $("soStats").textContent = shootPool().length + " mastered words on the squad" + (tot.s ? " · " + tot.g + " goals from " + tot.s + " shots" : ""); }
+  const sq = shootSquad(), tot = shootTotals();
+  $("soKgoals").textContent = tot.g; $("soKshots").textContent = tot.s; $("soKwon").textContent = tot.won; $("soKlost").textContent = tot.lost;
+  $("soSub").textContent = sq.kind === "mastered" ? "Shooting with your mastered words" : sq.kind === "graduated" ? "Shooting with words you've graduated · mastered words take over once you have five" : sq.kind === "started" ? "Shooting with words you've started · mastered words take over once you have five" : "Shooting with the first group · your own words take over once you've started five";
+  $("soStats").textContent = tot.won + tot.lost ? "Rounds: " + tot.won + " won, " + tot.lost + " lost" + (tot.perfect ? " · " + tot.perfect + " perfect" : "") + (tot.sessionsWon + tot.sessionsLost ? " · Shootouts: " + tot.sessionsWon + " won, " + tot.sessionsLost + " lost" : "") : "";
   const twl = troubleWords();
   $("vTrouble").textContent = "Trouble " + D.unit + " only" + (twl.length ? " · " + twl.length : ""); $("vTrouble").disabled = !twl.length; $("vTrouble").style.opacity = twl.length ? "1" : ".5";
   $("troubleNote").textContent = twl.length ? "Trouble " + D.unit + " are ones he's missed twice or more. Getting them right here doesn't move their schedule; missing them does." : "No trouble " + D.unit + " yet — they appear once one has been missed twice.";
@@ -2683,10 +2752,12 @@ function popGroup(g) {
   openPop("wordlist",
     '<div class="kicker">' + ws.length + ' words</div><div class="title">' + g + '</div>' +
     '<div class="wl">' + ws.map(w => '<div><i class="' + cls(w) + '"></i><div><b>' + w.w + '</b> <span>' + w.def + '</span></div>' + ((cards[w.w] || {}).lapses >= 2 ? '<small>missed ' + cards[w.w].lapses + '×</small>' : '') + '</div>').join("") + '</div>' +
+    (lsGet("tg_dev") === "on" ? '<button class="btn" id="practiceGroup" type="button" style="width:100%;justify-content:center;margin-top:12px">Practice this group</button>' : '') +
     '<button class="btn quiet" type="button">Close</button>');
+  const pb = $("practiceGroup"); if (pb) pb.onclick = () => { closePop(); vStart("group", g); };
 }
-function popMedal(name, s, c, M, V) {
-  const tr = TROPHIES.find(t => t.name === name), ok = tr.test(s, c, M, V);
+function popMedal(name, s, c, M, V, ST) {
+  const tr = TROPHIES.find(t => t.name === name), ok = tr.test(s, c, M, V, ST);
   openPop("medalinfo",
     '<div class="kicker">' + tr.cat + ' · ' + TIER[tr.tier].name + '</div><div class="title">' + tr.name + '</div>' +
     '<div class="medal' + (ok ? "" : " locked") + (tr.tier === 3 ? " gold" : tr.tier === 4 ? " diamond" : "") + '" style="--tier:' + TIER[tr.tier].color + '"><span class="disc bigdisc">' + ICONS[tr.ic] + '</span></div>' +
@@ -2706,26 +2777,29 @@ function popForm() {
 $("formCell").onclick = popForm;
 $("pop").onclick = e => { if (e.target === $("pop")) closePop(); };
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("pop").classList.contains("show")) closePop(); });
-const VIEWS = ["viewToday", "viewVocab", "viewSent", "viewSeason", "viewTrophies", "viewCoach"];
+const VIEWS = ["viewToday", "viewVocab", "viewSent", "viewShoot", "viewSeason", "viewTrophies", "viewCoach"];
 function show(view, deckId) {
   if (vs && (view !== "viewVocab" || (deckId && deckId !== D.id))) vStop(false);
   if (ss && view !== "viewSent") sStop(false);
-  if (so && (view !== "viewVocab" || (deckId && deckId !== "vocab"))) soStop();
+  if (so && view !== "viewShoot") soStop();
   if (deckId) D = DECKS[deckId];
   VIEWS.forEach(v => $(v).classList.toggle("hidden", v !== view));
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.view === view && (!b.dataset.deck || b.dataset.deck === D.id)));
+  const tabView = view === "viewSeason" ? "viewToday" : view;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.view === tabView && (!b.dataset.deck || b.dataset.deck === D.id)));
   if (view === "viewVocab") render();
   if (view !== "viewToday") viewDate = null;
   window.scrollTo(0, 0);
 }
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => show(b.dataset.view, b.dataset.deck));
+$("seasonBack").onclick = () => show("viewToday");
+$("seasonLink").onclick = () => show("viewSeason");
 $("dayNavBtn").onclick = () => { viewDate = viewDate ? null : addDays(today(), -1); render(); };
 const lc = $("levelCard"); const toggleLvl = () => { const open = lc.classList.toggle("open"); $("lvlDetail").classList.toggle("hidden", !open); lc.setAttribute("aria-expanded", String(open)); };
 lc.onclick = toggleLvl; lc.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleLvl(); } };
 $("saveBtn").onclick = async () => { data.name = $("nameIn").value.trim(); data.testDate = $("dateIn").value; data.newPerDay = Math.max(5, Math.min(100, Number($("newIn").value) || VOCAB.newPerDay)); await save(); render(); setSync("Settings saved."); };
 $("pvGoal").onclick = () => { show("viewToday"); const p = $("pitch"), pl = $("player"), b = $("ball"); pl.style.transform = "translate(296px,0)"; b.style.transform = "translate(306px,0)"; $("goalTxt").textContent = "GOAL! +120 XP"; setTimeout(shoot, 600); };
 $("pvFull").onclick = () => { const s = season(); popFullTime(today(), Object.assign({}, s, { run: Math.max(1, s.run), days: s.days.map(x => x.date === today() ? Object.assign({}, x, { done: x.total, xp: x.xp || 120 }) : x) })); };
-$("pvShoot").onclick = () => { show("viewVocab", "vocab"); soStart(true); };
+$("pvShoot").onclick = () => { show("viewShoot"); soStart(true, true); };
 $("pvLevel").onclick = () => { const L = LEVELS[1]; popLevelUp({ level: 2, title: L.title, xp: L.xp + 12, next: LEVELS[2] }); };
 $("resetBtn").onclick = async () => {
   if (!confirm("Wipe every logged session and start the season over? This can't be undone.")) return;
@@ -2733,21 +2807,30 @@ $("resetBtn").onclick = async () => {
 };
 /* ---- vocab session: a 10-minute clock; when it runs out, one vocab review is ticked on Match day ---- */
 let vs = null; // { endAt, seen, right, card, shown, timer }
-function vStart(mode) {
+function vStart(mode, group) {
   if (so) soStop();
-  vs = { mode: mode || "normal", endAt: Date.now() + VOCAB.sessionMin * MIN, seen: 0, right: 0, card: null, shown: false, seenSet: new Set(), batchNoted: false };
+  vs = { mode: mode || "normal", group: group || null, endAt: Date.now() + VOCAB.sessionMin * MIN, seen: 0, right: 0, card: null, shown: false, seenSet: new Set(), batchNoted: false };
+  $("vClock").classList.toggle("hidden", mode === "group"); $("vQuit").textContent = mode === "group" ? "Done practicing" : "Stop early (doesn't count)";
   $("vocabHome").classList.add("hidden"); $("vocabSession").classList.remove("hidden");
   vs.timer = setInterval(vTick, 250); vNext(); vTick();
+}
+/* A finished 10-minute session: tick one of the day's four reviews; past four, bank an extra. Six extras in a week = one bonus shot (max one a week). */
+const BONUS_EXTRAS = 6;
+function extrasThisWeek(t) { const mon = mondayOf(t); let n = 0; for (let i = 0; i < 7; i++) n += Number((data.log[addDays(mon, i)] || {}).x || 0); return n; }
+function sessionDone(label) {
+  const t = today(), vt = planFor(t).find(x => x.id === "v"), already = Number((data.log[t] || {}).v || 0);
+  if (already < (vt.count || 1)) { change(vt, t, +1); toast("Review ticked off · " + label); return; }
+  if (!data.log[t]) data.log[t] = {};
+  const before = extrasThisWeek(t); data.log[t].x = Number(data.log[t].x || 0) + 1; const after = before + 1;
+  render();
+  if (before < BONUS_EXTRAS && after >= BONUS_EXTRAS) { pop(); openPop("fulltime", confetti(30) + '<div class="kicker">Six extra sessions</div><div class="title">BONUS SHOT</div><div class="facts"><span>+1 goal this week</span></div><p>Extra work, extra goal. That\'s the one bonus shot for this week; the count starts again on Monday.</p><button class="btn" type="button">Back to the pitch</button>'); }
+  else if (after < BONUS_EXTRAS) toast("Extra session banked · " + after + " of " + BONUS_EXTRAS + " toward a bonus shot");
+  else toast("Extra session banked · bonus shot already scored this week");
 }
 function vStop(count) {
   clearInterval(vs.timer); const seen = vs.seen, right = vs.right; vs = null;
   $("vocabSession").classList.add("hidden"); $("vocabHome").classList.remove("hidden");
-  if (count) {
-    const t = today(), vt = planFor(t).find(x => x.id === "v");
-    const already = Number((data.log[t] || {}).v || 0);
-    if (already < (vt.count || 1)) { change(vt, t, +1); toast("Review ticked off · " + seen + " cards"); }
-    else toast("Session done · " + seen + " cards, " + right + " right");
-  }
+  if (count) sessionDone(seen + " cards, " + right + " right");
   save().catch(() => {});
 }
 function vTick() {
@@ -2755,7 +2838,7 @@ function vTick() {
   const left = Math.max(0, vs.endAt - Date.now()), m = Math.floor(left / MIN), sec = Math.floor((left % MIN) / 1000);
   $("vClock").textContent = m + ":" + String(sec).padStart(2, "0"); $("vClock").classList.toggle("low", left < MIN);
   $("vCount").textContent = vs.seen + " cards · " + vs.right + " right";
-  if (left <= 0) { vStop(true); return; }
+  if (left <= 0 && vs.mode !== "group") { vStop(true); return; }
 }
 function vNext() {
   const c = nextCard(); vs.card = c; vs.shown = false; const f = $("flash");
@@ -2769,7 +2852,7 @@ function vShow() {
   const btn = (g, cls, lbl) => '<button class="' + cls + '" data-g="' + g + '" type="button">' + lbl + '<small>' + ivLabel(preview(cur, g, now), now) + '</small></button>';
   $("flash").innerHTML = '<div class="kind ' + c.kind + '">' + c.w.w + ' · ' + c.w.pos + '</div><p class="def">' + c.w.def + '</p><p class="ex">' + c.w.ex + '</p><div class="spacer"></div>' +
     '<div class="grades" style="width:100%">' + btn(0, "again", "Missed it") + btn(1, "hard", "Hard") + btn(2, "good", "Got it") + '</div>';
-  document.querySelectorAll("#flash .grades button").forEach(b => b.onclick = () => { const g = +b.dataset.g; grade(c.w.w, g, vs.mode === "trouble"); vs.seenSet.add(c.w.w); vs.seen++; if (g >= 2) vs.right++; render(); vNext(); vTick(); if (vs.seen % 5 === 0) save().catch(() => {}); });
+  document.querySelectorAll("#flash .grades button").forEach(b => b.onclick = () => { const g = +b.dataset.g; grade(c.w.w, g, vs.mode === "trouble" || vs.mode === "group"); vs.seenSet.add(c.w.w); vs.seen++; if (g >= 2) vs.right++; render(); vNext(); vTick(); if (vs.seen % 5 === 0) save().catch(() => {}); });
 }
 $("vInfo").onclick = () => openPop("forminfo",
   '<div class="kicker">' + D.name + '</div><div class="title">How the 10 minutes work</div>' +
@@ -2792,15 +2875,34 @@ function soPitchSVG() { return '<svg viewBox="0 0 340 200" aria-hidden="true">' 
   '<g id="soPlayer"><circle cx="170" cy="140" r="7" fill="#F3B0A0"/><path d="M163 148h14l3 16h-4l-2-9h-8l-2 9h-4z" fill="#4081DB"/><path d="M166 164l-2 12h4l2-10zM174 164l2 12h-4l-2-10z" fill="#2C3436"/></g>' +
   '<g class="so-ball" id="soBall"><circle cx="170" cy="124" r="5.5" fill="#FFFFFF" stroke="#2C3436" stroke-width="1.5"/><path d="M168 124l2-2 2 2-2 2z" fill="#2C3436"/></g>' +
   '<text x="20" y="180" font-size="12" font-weight="700" fill="#FFFFFF" id="soScore"></text></svg>'; }
-function soStart(preview) {
-  const pool = preview ? DECKS.vocab.items.slice(0, 40) : shootPool(); if (pool.length < 1) return;
-  const st = shootStats(), ranked = pool.slice().sort((a, b) => ((st[a.w] || {}).last || 0) - ((st[b.w] || {}).last || 0) || Math.random() - .5);
-  so = { preview: !!preview, words: ranked.slice(0, 5), i: 0, results: [], answered: false };
-  if (so.words.length < 5) { while (so.words.length < 5 && pool.length) so.words.push(pool[Math.floor(Math.random() * pool.length)]); }
-  $("vocabHome").classList.add("hidden"); $("shootSession").classList.remove("hidden");
-  $("soPitch").innerHTML = soPitchSVG(); soShot();
+function soPickFive(pool, used) {
+  const st = shootStats(); const fresh = pool.filter(w => !used.has(w.w)); const src = fresh.length >= 5 ? fresh : pool;
+  const ranked = src.slice().sort((a, b) => ((st[a.w] || {}).last || 0) - ((st[b.w] || {}).last || 0) || Math.random() - .5);
+  const five = ranked.slice(0, 5); while (five.length < 5 && pool.length) five.push(pool[Math.floor(Math.random() * pool.length)]);
+  five.forEach(w => used.add(w.w)); return five;
 }
-function soStop() { so = null; $("shootSession").classList.add("hidden"); $("vocabHome").classList.remove("hidden"); render(); }
+// timed = true: rounds of five until the clock runs out; each round scores a point for Leo (3+ goals) or the opposition.
+function soStart(preview, timed) {
+  const pool = preview ? DECKS.vocab.items.slice(0, 40) : shootSquad().words;
+  if (vs) vStop(false);
+  so = { preview: !!preview, timed: !!timed, pool, used: new Set(), i: 0, results: [], answered: false, us: 0, them: 0, rounds: 0, endAt: timed ? Date.now() + VOCAB.sessionMin * MIN : 0, over: false };
+  so.words = soPickFive(pool, so.used);
+  $("shootHome").classList.add("hidden"); $("shootSession").classList.remove("hidden"); $("soTimerbar").classList.toggle("hidden", !timed);
+  $("soPitch").innerHTML = soPitchSVG(); if (timed) { so.timer = setInterval(soTick, 250); soTick(); } soShot();
+}
+function soStop() { if (so && so.timer) clearInterval(so.timer); so = null; $("shootSession").classList.add("hidden"); $("shootHome").classList.remove("hidden"); render(); }
+function soTick() {
+  if (!so || !so.timed) return;
+  const left = Math.max(0, so.endAt - Date.now()), m = Math.floor(left / MIN), sec = Math.floor((left % MIN) / 1000);
+  $("soClockTxt").textContent = m + ":" + String(sec).padStart(2, "0"); $("soClockTxt").classList.toggle("low", left < MIN);
+  $("soScoreTxt").textContent = (data.name || "Leo") + " " + so.us + " – " + so.them + " · round " + (so.rounds + 1);
+  if (left <= 0 && !so.over) { so.over = true; clearInterval(so.timer); if (!so.answered) soFinish(); }
+}
+function soRoundDone() {
+  const goals = so.results.filter(r => r === "goal").length, win = goals >= 3;
+  if (win) so.us++; else so.them++; so.rounds++; if (so.timed) soTick();
+  if (!so.preview) { const rd = data.shootRounds || (data.shootRounds = { won: 0, lost: 0, perfect: 0, best: 0, sessionsWon: 0, sessionsLost: 0 }); if (win) rd.won++; else rd.lost++; if (goals === 5) rd.perfect++; rd.best = Math.max(rd.best || 0, goals); }
+}
 function soDots() { $("soShots").innerHTML = so.words.map((w, k) => '<i class="' + (so.results[k] || "") + (k === so.i && !so.results[k] ? " now" : "") + '"></i>').join(""); }
 function soShot() {
   const w = so.words[so.i]; so.answered = false; soDots();
@@ -2828,24 +2930,39 @@ function soJudge(answer, skipped) {
     outcome === "saved" ? (j.other ? '"' + j.other + '" is a different word in the deck. This one is:' : "The word is:") : "The word is:";
   $("soFlash").innerHTML = '<div class="so-result"><div class="t ' + outcome + '">' + title + '</div><p>' + note + '</p><div class="w">' + w.w + '</div><p>' + w.def + '</p></div>' +
     '<button class="btn" id="soNext" type="button" style="width:100%;justify-content:center;margin-top:14px">' + (so.i < 4 ? "Next shot" : "Final whistle") + '</button>';
-  $("soNext").onclick = () => { so.i++; if (so.i < 5) soShot(); else soEnd(); };
+  $("soNext").onclick = () => { so.i++; if (so.i < 5) soShot(); else { soRoundDone(); if (so.timed && !so.over) { toast("Round " + so.rounds + ": " + (so.results.filter(r => r === "goal").length >= 3 ? "point to " + (data.name || "Leo") : "point to the opposition")); so.words = soPickFive(so.pool, so.used); so.i = 0; so.results = []; soShot(); } else soFinish(); } };
   $("soNext").focus();
 }
-function soEnd() {
-  const goals = so.results.filter(r => r === "goal").length, saved = so.results.filter(r => r === "saved").length, miss = so.results.filter(r => r === "miss").length;
-  if (!so.preview) save().catch(() => {});
-  openPop("fulltime", confetti(goals >= 3 ? 26 : 8) +
-    '<div class="kicker">Shootout</div><div class="title">' + goals + ' of 5 scored</div>' +
-    '<div class="so-shots" style="justify-content:center">' + so.results.map(r => '<i class="' + r + '"></i>').join("") + '</div>' +
-    '<div class="facts"><span>' + goals + ' goal' + (goals === 1 ? "" : "s") + '</span><span>' + saved + ' saved</span><span>' + miss + ' missed</span></div>' +
-    '<p>' + (goals === 5 ? "Perfect round." : goals >= 3 ? "Good shooting." : "The keeper had a busy night. They'll come round again.") + '</p>' +
-    '<button class="btn" type="button">Back to the pitch</button>');
+function soFinish() {
+  const name = data.name || "Leo";
+  if (so.timed) {
+    if (so.timer) clearInterval(so.timer);
+    const won = so.us > so.them, drawn = so.us === so.them;
+    if (!so.preview) { const rd = data.shootRounds || (data.shootRounds = { won: 0, lost: 0, perfect: 0, best: 0, sessionsWon: 0, sessionsLost: 0 }); if (won) rd.sessionsWon++; else if (!drawn) rd.sessionsLost++; }
+    if (!so.preview) save().catch(() => {});
+    openPop("fulltime", confetti(won ? 30 : 6) +
+      '<div class="kicker">Shootout · full time</div><div class="title">' + (won ? "WON" : drawn ? "DRAW" : "LOST") + ' ' + so.us + ' – ' + so.them + '</div>' +
+      '<div class="facts"><span>' + so.rounds + ' round' + (so.rounds === 1 ? "" : "s") + '</span><span>' + name + ' ' + so.us + '</span><span>Opposition ' + so.them + '</span></div>' +
+      '<p>' + (won ? "The keeper never stood a chance." : drawn ? "All square. Next time settles it." : "The keeper had the better night. Back at it tomorrow.") + '</p>' +
+      '<button class="btn" type="button">Back to the pitch</button>');
+    if (!so.preview) { const us = so.us, them = so.them; popNext = () => { soStop(); sessionDone("shootout " + us + " – " + them); }; return; }
+  } else {
+    const goals = so.results.filter(r => r === "goal").length, saved = so.results.filter(r => r === "saved").length, miss = so.results.filter(r => r === "miss").length;
+    if (!so.preview) save().catch(() => {});
+    openPop("fulltime", confetti(goals >= 3 ? 26 : 8) +
+      '<div class="kicker">Shootout</div><div class="title">' + goals + ' of 5 scored</div>' +
+      '<div class="so-shots" style="justify-content:center">' + so.results.map(r => '<i class="' + r + '"></i>').join("") + '</div>' +
+      '<div class="facts"><span>' + goals + ' goal' + (goals === 1 ? "" : "s") + '</span><span>' + saved + ' saved</span><span>' + miss + ' missed</span></div>' +
+      '<p>' + (goals === 5 ? "Perfect round." : goals >= 3 ? "Good shooting." : "The keeper had a busy night. They'll come round again.") + '</p>' +
+      '<button class="btn" type="button">Back to the pitch</button>');
+  }
   popNext = soStop;
 }
-$("soStart").onclick = () => soStart(false); $("soQuit").onclick = soStop;
+$("soStart").onclick = () => soStart(false, false); $("soClock").onclick = () => soStart(false, true); $("soQuit").onclick = soStop;
 $("soInfo").onclick = () => openPop("forminfo", '<div class="kicker">Shootout</div><div class="title">How it works</div>' +
   '<p style="text-align:left">Flashcards show the word and ask for the meaning. Shootout flips it: the meaning comes up and you type the word. Only words you\'ve already mastered take the field.</p>' +
-  '<p style="text-align:left">Five shots a round. A goal is the word or a close synonym. Spelling is not graded: a letter off, a swapped pair, or a different ending still scores, and the correct spelling is shown after every shot. Typing a different deck word is a save for the keeper. Blank or skipped is a miss.</p>' +
+  '<p style="text-align:left">Start the clock for ten minutes of rounds: score 3 or more of 5 and the round\'s point goes to you, otherwise to the opposition, and the final score decides the shootout. Or take a single round of five.</p>' +
+  '<p style="text-align:left">A goal is the word or a close synonym. Spelling is not graded: a letter off, a swapped pair, or a different ending still scores, and the correct spelling is shown after every shot. Typing a different deck word is a save for the keeper. Blank or skipped is a miss.</p>' +
   '<button class="btn quiet" type="button">Close</button>');
 /* ---- sentence session ---- */
 let ss = null;
@@ -2857,8 +2974,7 @@ function sStart() {
 function sStop(count) {
   clearInterval(ss.timer); const seen = ss.seen, right = ss.right; ss = null;
   $("sentSession").classList.add("hidden"); $("sentHome").classList.remove("hidden");
-  if (count) { const t = today(), vt = planFor(t).find(x => x.id === "v"), already = Number((data.log[t] || {}).v || 0);
-    if (already < (vt.count || 1)) { change(vt, t, +1); toast("Review ticked off · " + right + " of " + seen + " right"); } else toast("Drill done · " + right + " of " + seen + " right"); }
+  if (count) sessionDone(right + " of " + seen + " right");
   save().catch(() => {});
 }
 function sTick() {
@@ -2909,6 +3025,8 @@ $("codeNew").onclick = () => enter(newCode());
 $("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText(familyLink()); $("copyBtn").textContent = "Copied"; setTimeout(() => $("copyBtn").textContent = "Copy the link", 1500); } catch (e) { $("copyBtn").textContent = "Select the link above and copy it"; } };
 $("verShow").textContent = APP_VERSION;
 $("updateBtn").onclick = () => { location.href = location.pathname + "?v=" + Date.now(); }; // forces a fresh copy of the file; data and code are untouched
+function paintDev() { $("devBtn").textContent = lsGet("tg_dev") === "on" ? "On · tap to turn off" : "Off · tap to turn on"; }
+$("devBtn").onclick = () => { lsSet("tg_dev", lsGet("tg_dev") === "on" ? "off" : "on"); paintDev(); render(); }; paintDev();
 function paintSound() { $("soundBtn").textContent = lsGet("tg_sound") === "off" ? "Sound off · tap to turn on" : "Sound on · tap to turn off"; }
 $("soundTest").onclick = () => pop(true);
 $("soundBtn").onclick = () => { lsSet("tg_sound", lsGet("tg_sound") === "off" ? "on" : "off"); paintSound(); if (lsGet("tg_sound") !== "off") pop(); }; paintSound();
