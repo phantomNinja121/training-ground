@@ -121,7 +121,6 @@
   .meter { height: 10px; border-radius: 5px; background: var(--bg); overflow: hidden; }
   .meter > i { display: block; height: 100%; border-radius: 5px; background: var(--green); transition: width .5s ease, background .5s ease; }
   .card p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--dark-gray); }
-  .prompt { font-size: 15px; line-height: 1.55; margin: 0; color: var(--black); padding: 12px 14px; background: var(--light-yellow); border-radius: 12px; }
 
   /* season */
   .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
@@ -269,6 +268,35 @@
   .flash .def { font-size: 17px; line-height: 1.5; color: var(--black); margin: 16px 0 6px; max-width: 320px; }
   .flash .ex { font-size: 14px; color: var(--dark-gray); font-style: italic; line-height: 1.45; max-width: 320px; }
   .flash .spacer { flex: 1; }
+  .flash.sent { align-items: stretch; text-align: left; padding: 18px 16px 16px; }
+  .flash.sent .kind { text-align: center; }
+  .flash.sent .q { font-size: 16.5px; line-height: 1.55; color: var(--black); margin: 0 0 14px; }
+  .flash.sent .q b { font-weight: 700; color: var(--green); }
+  .choices { display: flex; flex-direction: column; gap: 8px; }
+  .choice { display: flex; gap: 10px; align-items: flex-start; text-align: left; background: var(--white); border: 1.5px solid var(--bg); border-radius: 12px; padding: 11px 12px; font: inherit; font-size: 15px; color: var(--black); }
+  .choice .l { font-weight: 700; color: var(--mid-gray); flex: 0 0 18px; }
+  .choice.right { background: var(--light-green); border-color: var(--green); }
+  .choice.wrong { background: var(--light-red); border-color: var(--red); }
+  .choice.dim { opacity: .45; }
+  .why { margin: 14px 0 0; padding: 12px 14px; background: var(--bg); border-radius: 12px; font-size: 14px; line-height: 1.5; color: var(--black); }
+  .why b { display: block; margin-bottom: 2px; }
+  .tab { font-size: 10px; padding: 8px 1px 6px; } .tab .ic { font-size: 19px; }
+  /* shootout */
+  .so-pitch svg { width: 100%; height: auto; display: block; border-radius: 16px; }
+  .so-ball { transition: transform .6s cubic-bezier(.2,.8,.3,1); }
+  .so-keeper { transition: transform .35s ease; transform-box: fill-box; transform-origin: center; }
+  .so-shots { display: flex; justify-content: center; gap: 10px; margin: 10px 0 4px; }
+  .so-shots i { width: 16px; height: 16px; border-radius: 50%; background: var(--bg); border: 2px solid var(--light-gray); }
+  .so-shots i.goal { background: var(--green); border-color: var(--green); } .so-shots i.saved { background: var(--yellow); border-color: var(--yellow); } .so-shots i.miss { background: var(--red); border-color: var(--red); } .so-shots i.now { border-color: var(--black); }
+  .so-def { font-size: 18px; line-height: 1.45; color: var(--black); text-align: center; margin: 4px 0 2px; }
+  .so-pos { font-size: 13px; color: var(--mid-gray); text-align: center; font-style: italic; }
+  .so-in { width: 100%; font-size: 22px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--light-gray); text-align: center; margin-top: 14px; }
+  .so-in:focus { outline: 0; border-color: var(--green); }
+  .so-result { text-align: center; margin-top: 12px; }
+  .so-result .t { font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+  .so-result .t.goal { color: var(--green); } .so-result .t.saved { color: var(--red); } .so-result .t.miss { color: var(--dark-gray); }
+  .so-result .w { font-size: 26px; font-weight: 700; margin-top: 6px; }
+  .so-result p { margin: 8px 0 0; color: var(--dark-gray); font-size: 14px; }
   .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
   .grades button { border: 0; border-radius: 12px; padding: 10px 4px 8px; font-weight: 700; font-size: 14px; color: var(--black); }
   .grades button small { display: block; font-weight: 500; font-size: 11px; color: var(--dark-gray); margin-top: 2px; }
@@ -359,10 +387,6 @@
       <div class="meter"><i id="xpBar" style="width:0%;background:var(--purple)"></i></div>
       <div id="lvlDetail" class="hidden"></div>
     </div>
-    <div class="card hidden" id="essayCard">
-      <h3>Essay prompt <span class="r">30 minutes, timed</span></h3>
-      <p class="prompt" id="essayPrompt"></p>
-    </div>
   </section>
 
   <section id="viewVocab" class="hidden">
@@ -378,10 +402,39 @@
       </div>
       <div class="card"><h3>Groups <span class="r">tap one for its list</span></h3><div id="groups"></div></div>
     </div>
+    <div class="card hidden" id="shootCard">
+      <h3>Shootout <button class="info" id="soInfo" type="button" aria-label="How it works">i</button></h3>
+      <p style="margin:0" id="soBlurb">Five shots. The definition comes up, you type the word. Only words you've mastered take the field.</p>
+      <div class="btnrow"><button class="btn" id="soStart" type="button">Take five shots</button></div>
+      <p class="status-line" id="soStats"></p>
+    </div>
+    <div id="shootSession" class="hidden">
+      <div class="so-pitch" id="soPitch"></div>
+      <div class="so-shots" id="soShots"></div>
+      <div class="flash" id="soFlash" style="min-height:200px"></div>
+      <div class="daynav"><button id="soQuit" type="button">Leave the shootout</button></div>
+    </div>
     <div id="vocabSession" class="hidden">
       <div class="timerbar"><div class="t" id="vClock">10:00</div><div class="n" id="vCount"></div></div>
       <div class="flash" id="flash"></div>
       <div class="daynav"><button id="vQuit" type="button">Stop early (doesn't count)</button></div>
+    </div>
+  </section>
+  <section id="viewSent" class="hidden">
+    <h1>Sentences</h1>
+    <p class="sub" id="sentSub"></p>
+    <div id="sentHome">
+      <div class="deck"><div class="due"><b id="skTrouble">0</b><span>to fix</span></div><div class="new"><b id="skNew">0</b><span>unseen</span></div><div class="learn"><b id="skAcc">–</b><span>accuracy</span></div><div><b id="skVocab">0</b><span>from vocab</span></div></div>
+      <div class="card">
+        <h3>10-minute sentence drill <button class="info" id="sInfo" type="button" aria-label="How it works">i</button></h3>
+        <p style="margin:0">Real ISEE-style sentence completions, A to D. Ones he got wrong come back first. When the clock runs out, one of the day's four 10-minute reviews is checked off.</p>
+        <button class="btn" id="sStart" type="button">Start the clock</button>
+      </div>
+    </div>
+    <div id="sentSession" class="hidden">
+      <div class="timerbar"><div class="t" id="sClock">10:00</div><div class="n" id="sCount"></div></div>
+      <div class="flash sent" id="sflash"></div>
+      <div class="daynav"><button id="sQuit" type="button">Stop early (doesn't count)</button></div>
     </div>
   </section>
   <section id="viewSeason" class="hidden">
@@ -434,6 +487,7 @@
         <button class="btn quiet" id="pvGoal" type="button">Score the winner</button>
         <button class="btn quiet" id="pvFull" type="button">Full time</button>
         <button class="btn quiet" id="pvLevel" type="button">Level up</button>
+        <button class="btn quiet" id="pvShoot" type="button">Shootout (any words)</button>
       </div>
     </div>
     <div class="card">
@@ -448,6 +502,7 @@
   <button class="tab on" data-view="viewToday" type="button"><span class="ic" data-icon="ball"></span>Match day</button>
   <button class="tab" data-view="viewVocab" data-deck="vocab" type="button"><span class="ic" data-icon="book"></span>Vocab</button>
   <button class="tab" data-view="viewVocab" data-deck="math" type="button"><span class="ic" data-icon="target"></span>Math</button>
+  <button class="tab" data-view="viewSent" type="button"><span class="ic" data-icon="pen"></span>Sentences</button>
   <button class="tab" data-view="viewSeason" type="button"><span class="ic" data-icon="calendar"></span>Season</button>
   <button class="tab" data-view="viewTrophies" type="button"><span class="ic" data-icon="trophy"></span>Trophies</button>
   <button class="tab" data-view="viewCoach" type="button"><span class="ic" data-icon="clipboard"></span>Coach</button>
@@ -466,7 +521,7 @@
 /* ============================================================
    1. VERSION + CONFIG — the Firebase config is read from config.js (see SETUP.md), never pasted here.
    ============================================================ */
-const APP_VERSION = "2026-09-10.16";
+const APP_VERSION = "2026-09-13.1";
 const firebaseConfig = window.firebaseConfig || null;
 // The family code is the password: it's the Firestore record name, it's never written into this file, and it only travels in the link you share.
 const mem = {};
@@ -486,26 +541,12 @@ const PLAN = {
     { id: "v",  label: "10-minute reviews", sub: "4 × 10 min · vocab or math, spread through the day", pts: 10, count: 4 }
   ],
   weekend: [
-    { id: "e",  label: "Essay", sub: "One full timed essay", pts: 60 },
+    { id: "e",  label: "Essay", sub: "30 min · one full timed essay from a practice test", pts: 60 },
     { id: "p",  label: "Practice test sections", sub: "", pts: 70, count: 2 },
     { id: "v",  label: "10-minute reviews", sub: "4 × 10 min · vocab or math, spread through the day", pts: 10, count: 4 }
   ]
 };
 const SECTIONS = ["Verbal", "Quantitative", "Reading", "Math Achievement"];
-const ESSAYS = [
-  "If you could add one class to your school's schedule that every student had to take, what would it be and why?",
-  "Describe a time you changed your mind about something important. What made you reconsider?",
-  "What is one skill you think every ninth grader should have before starting high school? Explain your reasoning.",
-  "Some people believe competition brings out the best in people; others think it brings out the worst. Where do you stand?",
-  "Write about a place that matters to you and explain what it has taught you.",
-  "If you were given one hour each week to teach younger students anything at all, what would you teach and how?",
-  "Describe a challenge you faced on a team. What did you learn about working with others?",
-  "Should schools require students to participate in a sport or physical activity? Take a position and defend it.",
-  "Write about a person you admire who is not famous. What do they do that earns your respect?",
-  "What is a rule you would change at your school, and what would you replace it with?",
-  "Explain something you are good at and how you got better at it.",
-  "If you could spend a year living anywhere in the world, where would you go and what would you hope to gain?"
-];
 /* ============================================================
    VOCAB — "word | part of speech | definition | example". Add lines; the app tracks each word's memory separately.
    ============================================================ */
@@ -820,6 +861,316 @@ stoic|adjective|enduring hardship without showing feeling|She was stoic about th
 tacit|adjective|understood without being stated|They had a tacit agreement to share the chores.
 truncate|verb|to shorten by cutting off part|The speech was truncated to fit the schedule.
 vigilant|adjective|watchful for danger|Stay vigilant near the road.
+# Group 11 · abstemious
+abstemious|adjective|not eating or drinking much; self-restrained|The abstemious athlete skipped dessert every night.
+affront|noun|an action or remark that causes offense|Skipping the handshake was an affront to the other captain.
+apathy|noun|lack of interest or concern|Voter apathy was high in the election.
+auspicious|adjective|promising success; favorable|Sunshine on opening day felt auspicious.
+brusque|adjective|abrupt or blunt in manner|His brusque reply ended the conversation.
+cobble|verb|to put together roughly or hastily|We cobbled together a plan at halftime.
+corroborate|verb|to confirm or support with evidence|The video corroborated her story.
+deplete|verb|to use up the supply of|The long run depleted his energy.
+douse|verb|to drench with liquid; to put out a fire|They doused the campfire before leaving.
+emulate|verb|to try to match or copy, usually out of admiration|He emulates his favorite striker's footwork.
+exalt|verb|to praise highly; to raise in rank|The crowd exalted the goalkeeper after the save.
+fleeting|adjective|lasting a very short time|Summer felt fleeting this year.
+guile|noun|sly cleverness; cunning|The striker used guile to fake out the defender.
+ignominious|adjective|deserving public shame or disgrace|The team suffered an ignominious 7–0 defeat.
+incite|verb|to stir up or urge on, often to violence|The speech incited the crowd to riot.
+insinuate|verb|to hint at something unpleasant in an indirect way|She insinuated that he had cheated.
+judicious|adjective|showing good judgment|A judicious coach rests tired players.
+luminous|adjective|giving off light; bright|The luminous moon lit the field.
+mollify|verb|to soothe someone's anger|A free ticket mollified the angry fan.
+obstinate|adjective|stubbornly refusing to change one's opinion|The obstinate mule wouldn't move.
+partisan|adjective|strongly supporting one side or party|The partisan crowd booed every call against the home team.
+plagiarize|verb|to copy someone else's work and pass it off as your own|He was caught plagiarizing an essay from the internet.
+profound|adjective|very deep or intense; showing great insight|The book had a profound effect on her.
+quintessential|adjective|the most perfect example of something|Pizza is the quintessential party food.
+rescind|verb|to cancel or take back an order or decision|The school rescinded the new dress code.
+scion|noun|a descendant of a notable family|The scion of a soccer dynasty joined the club.
+stolid|adjective|calm and showing little emotion|The stolid referee ignored the shouting.
+taciturn|adjective|saying very little; reserved|The taciturn goalie rarely spoke to reporters.
+tumultuous|adjective|loud, excited, and confused|A tumultuous crowd greeted the champions.
+vignette|noun|a brief, vivid description or scene|The film opens with a vignette of a village at dawn.
+# Group 12 · abstinence
+abstinence|noun|the practice of holding back from something, such as food or alcohol|His abstinence from junk food lasted all season.
+acerbic|adjective|sharp and harsh in tone|Her acerbic review called the play "a nap with lights."
+aggrandize|verb|to make something seem greater or more important than it is|He aggrandized his role in the win.
+apex|noun|the highest point|Winning the final was the apex of her season.
+austere|adjective|severe or strict; plain and without comfort|The monks lived an austere life.
+bucolic|adjective|relating to peaceful country life|They spent the summer in a bucolic village.
+coerce|verb|to force someone to do something by threats or pressure|No one should be coerced into signing.
+depraved|adjective|morally corrupt; wicked|The villain's depraved plan shocked the audience.
+dowdy|adjective|unfashionable and dull in appearance|The dowdy uniform was replaced with a sharp new kit.
+encomium|noun|a speech or piece of writing that praises someone highly|The retiring coach received an encomium from his players.
+excommunicate|verb|to officially exclude someone from a church or group|The rebel was excommunicated from the guild.
+flippant|adjective|not showing proper seriousness|His flippant answer annoyed the teacher.
+guileless|adjective|innocent and without deception|The guileless rookie believed every prank.
+illiterate|adjective|unable to read or write|The program teaches illiterate adults to read.
+incoherent|adjective|unclear; not making sense|His speech was incoherent after the exhausting game.
+insipid|adjective|lacking flavor or interest; dull|The soup was insipid without salt.
+juxtapose|verb|to place side by side for comparison|The exhibit juxtaposes old and new photos of the city.
+mawkish|adjective|sentimental in a sickly or exaggerated way|The mawkish movie made everyone groan.
+moniker|noun|a name or nickname|"The Wall" is the goalkeeper's moniker.
+obtuse|adjective|slow to understand|He was being deliberately obtuse about the rules.
+pathetic|adjective|arousing pity; pitifully inadequate|The team's pathetic effort embarrassed the fans.
+platitude|noun|a dull, overused remark presented as if meaningful|"Give it your all" is a platitude.
+profuse|adjective|given or produced in large amounts|She offered profuse apologies for being late.
+quip|noun|a witty remark|His quip about the weather got a laugh.
+resilient|adjective|able to recover quickly from difficulty|A resilient team bounces back from a loss.
+scrutinize|verb|to examine closely and critically|Scrutinize the contract before signing.
+strenuous|adjective|requiring great effort or energy|The strenuous hike took six hours.
+tantamount|adjective|equivalent in effect or value|Skipping practice is tantamount to quitting.
+turbulence|noun|violent, unsteady movement; disorder|The plane shook with turbulence.
+vilify|verb|to speak or write about someone in an abusively unfair way|The press vilified the referee after the match.
+# Group 13 · abstruse
+abstruse|adjective|difficult to understand; obscure|The abstruse lecture lost most of the class.
+aggregate|noun|a whole formed by combining several parts|The aggregate score over both games was 5–3.
+aphorism|noun|a short, wise saying|"Less is more" is a famous aphorism.
+autonomous|adjective|self-governing; independent|The club runs an autonomous youth academy.
+burgeon|verb|to grow or increase rapidly|Interest in the sport burgeoned after the World Cup.
+collaborate|verb|to work together on something|The two schools collaborated on the play.
+courageous|adjective|brave|The courageous keeper dove at the striker's feet.
+deprecate|verb|to express disapproval of|The coach deprecated the flashy but useless trick.
+dramatize|verb|to exaggerate; to adapt as a play|He dramatized a small scratch into a major injury.
+endeavor|noun|a serious attempt or effort|Learning the violin is a lifelong endeavor.
+executor|noun|a person appointed to carry out a will|Her uncle was named executor of the estate.
+florid|adjective|elaborately fancy; flushed red|The florid speech was full of ornate phrases.
+guise|noun|an outward appearance that hides the truth|The thief entered under the guise of a delivery worker.
+illumine|verb|to light up; to make clear|The lamp illumined the whole hallway.
+incompetent|adjective|not having the skill to do something successfully|The incompetent mechanic made the noise worse.
+insolence|noun|rude and disrespectful behavior|His insolence toward the umpire earned an ejection.
+knack|noun|a special skill or talent|She has a knack for remembering names.
+macabre|adjective|disturbing because it involves death or injury|The macabre tale gave everyone chills.
+moratorium|noun|a temporary halt of an activity|The city placed a moratorium on new building.
+obviate|verb|to remove a need or difficulty; to prevent|Good planning obviated the need for overtime.
+pathos|noun|a quality that evokes pity or sadness|The film's pathos left the audience in tears.
+plebeian|adjective|relating to ordinary people; commonplace|He preferred plebeian pleasures like hot dogs.
+progenitor|noun|an ancestor or originator|The wolf is the progenitor of the dog.
+raconteur|noun|a person who tells stories in an entertaining way|Grandpa is the family raconteur.
+resolved|adjective|firmly determined|She was resolved to make the team.
+secede|verb|to formally withdraw from a group or country|The region voted to secede.
+strident|adjective|loud and harsh; forceful|The strident whistle cut through the noise.
+taper|verb|to gradually narrow or lessen|The rain tapered off by evening.
+turmoil|noun|a state of great confusion or disorder|The team was in turmoil after the coach quit.
+virtuoso|noun|a person highly skilled in an art|The pianist is a virtuoso.
+# Group 14 · abundant
+abundant|adjective|existing in large amounts; plentiful|Apples are abundant in autumn.
+agile|adjective|able to move quickly and easily|The agile winger dodged three defenders.
+aplomb|noun|calm self-confidence|She handled the tough questions with aplomb.
+avarice|noun|extreme greed for wealth|Avarice drove the king to raise taxes again.
+bygone|adjective|belonging to an earlier time|The photo shows a bygone era of leather balls.
+collate|verb|to collect and combine in proper order|Collate the pages before stapling.
+covert|adjective|secret; hidden|The covert plan was known to only three people.
+derelict|adjective|abandoned and in poor condition; neglectful of duty|The derelict warehouse had broken windows.
+drivel|noun|silly nonsense|Don't believe the drivel on that website.
+endow|verb|to provide with a quality or with money|She was endowed with a powerful left foot.
+exodus|noun|a mass departure of people|There was an exodus from the stadium after the third goal.
+flounder|verb|to struggle clumsily; to be in difficulty|The team floundered without its captain.
+gullible|adjective|easily fooled|The gullible fan bought a fake signed shirt.
+imbecile|noun|a stupid person|He called himself an imbecile for missing the penalty.
+incongruous|adjective|out of place; not fitting|A tuxedo at a beach party looks incongruous.
+insolvent|adjective|unable to pay debts|The insolvent club sold its best players.
+labyrinth|noun|a maze; something very complicated|The old city is a labyrinth of narrow streets.
+magnanimous|adjective|generous and forgiving, especially toward a rival|The magnanimous winner praised the loser's effort.
+morose|adjective|gloomy and sullen|He was morose for a week after the loss.
+occlude|verb|to block or close up|Fallen leaves occluded the drain.
+patronize|verb|to treat with a superior, condescending manner; to be a regular customer of|Don't patronize me; I understand the rules.
+plethora|noun|an excessive amount|The store has a plethora of cleats.
+progeny|noun|offspring; descendants|The champion's progeny also became athletes.
+radiate|verb|to spread out from a center; to give off|Confidence radiated from the captain.
+respite|noun|a short period of rest or relief|Halftime offered a brief respite.
+sedate|adjective|calm and unhurried|The sedate village had one traffic light.
+stymie|verb|to prevent or hinder|Rain stymied the outdoor practice.
+tedious|adjective|too long and boring|Sorting a thousand cards was tedious.
+turpitude|noun|wickedness; shameful behavior|The official was fired for moral turpitude.
+virtuous|adjective|having high moral standards|The virtuous knight kept every promise.
+# Group 15 · abysmal
+abysmal|adjective|extremely bad|The team's abysmal defense conceded six goals.
+ailment|noun|a minor illness|A stomach ailment kept him home.
+apogee|noun|the highest point|Her fame reached its apogee after the Olympics.
+averse|adjective|strongly opposed or unwilling|He is averse to taking risks.
+cacophony|noun|a harsh mix of loud sounds|The cacophony of horns filled the street.
+colloquial|adjective|used in ordinary, casual conversation|"Gonna" is colloquial; "going to" is formal.
+craven|adjective|cowardly|The craven soldier fled at the first shot.
+deride|verb|to mock or ridicule|Critics derided the plan as silly.
+droll|adjective|amusing in an odd, dry way|His droll comments kept everyone smiling.
+enervate|verb|to weaken; to drain of energy|The heat enervated the players.
+exonerate|verb|to clear of blame|New evidence exonerated the suspect.
+flout|verb|to openly disobey a rule|He flouted the curfew and got benched.
+gumption|noun|courage and initiative; common sense|It takes gumption to start a business at sixteen.
+imbibe|verb|to drink; to absorb ideas|She imbibed every word of the lecture.
+inconsequential|adjective|not important|The typo was inconsequential.
+instill|verb|to gradually put an idea or feeling into someone's mind|The coach instilled discipline in the squad.
+lackadaisical|adjective|lacking enthusiasm and effort|A lackadaisical warm-up led to a sloppy start.
+maladroit|adjective|clumsy; inept|The maladroit waiter dropped two trays.
+mortify|verb|to embarrass greatly|He was mortified when his voice cracked.
+odious|adjective|extremely unpleasant; hateful|The odious smell came from the locker.
+peccadillo|noun|a small, unimportant fault|Chewing gum in class is a peccadillo, not a crime.
+pliable|adjective|easily bent; easily influenced|Warm clay is pliable.
+prohibit|verb|to formally forbid|Phones are prohibited during the test.
+ramble|verb|to talk or wander aimlessly|The speaker rambled for an hour.
+reticent|adjective|not revealing one's thoughts readily|He was reticent about his past.
+sedentary|adjective|involving a lot of sitting|A sedentary job needs an active hobby.
+subdue|verb|to bring under control; to quiet|The guards subdued the intruder.
+temerity|noun|reckless boldness|He had the temerity to argue with the referee.
+tyrannical|adjective|cruel and controlling|The tyrannical coach screamed at every mistake.
+virulent|adjective|extremely harmful; bitterly hostile|A virulent flu swept the school.
+# Group 16 · abyss
+abyss|noun|a deep, bottomless pit|The hikers peered into the abyss.
+alienate|verb|to cause someone to feel isolated or unfriendly|His arrogance alienated his teammates.
+apologist|noun|a person who defends something controversial|He became an apologist for the unpopular rule.
+avert|verb|to turn away; to prevent|A quick tackle averted a goal.
+cadge|verb|to get something by begging|He cadged a ride home from a teammate.
+combative|adjective|ready or eager to fight|The combative midfielder picked up three fouls.
+credulous|adjective|too ready to believe things|The credulous audience bought the magician's story.
+derive|verb|to obtain from a source|She derives great joy from painting.
+dubious|adjective|doubtful; of questionable quality|A dubious offside call ended the attack.
+engender|verb|to cause or give rise to|Fair play engenders respect.
+exorbitant|adjective|unreasonably high in price|Stadium hot dogs are exorbitant.
+foregone|adjective|already decided; inevitable|The win was a foregone conclusion by halftime.
+hackneyed|adjective|overused and unoriginal|The essay was full of hackneyed phrases.
+immaterial|adjective|not relevant|His age is immaterial to the decision.
+inconspicuous|adjective|not easily noticed|She wore an inconspicuous gray coat.
+insurgency|noun|an active revolt or uprising|The insurgency lasted three years.
+lackluster|adjective|lacking energy or brilliance; dull|A lackluster first half drew boos.
+malady|noun|a disease or ailment|A mysterious malady kept him out for a month.
+mousy|adjective|shy and timid; dull brown|The mousy student rarely raised her hand.
+officious|adjective|bossy in an annoying, meddling way|The officious usher kept moving people around.
+pedantic|adjective|overly concerned with small details or rules|The pedantic editor corrected every comma.
+plucky|adjective|brave and determined|The plucky underdog forced extra time.
+proletariat|noun|the working class|The novel is about the struggles of the proletariat.
+rambunctious|adjective|noisy and wild|The rambunctious puppies knocked over the lamp.
+retribution|noun|punishment for a wrong|The red card was retribution for the tackle.
+sedition|noun|actions or speech urging rebellion|The pamphlet was charged with sedition.
+subjugate|verb|to bring under control by force|The empire subjugated its neighbors.
+tenable|adjective|able to be defended or held|The argument was no longer tenable.
+tyro|noun|a beginner|As a tyro, he practiced the basics daily.
+viscous|adjective|thick and sticky in consistency|Honey is viscous.
+# Group 17 · accede
+accede|verb|to agree to a demand or request|The board acceded to the players' request.
+allay|verb|to reduce fear or worry|The doctor's words allayed her fears.
+appalling|adjective|shockingly bad|The pitch was in appalling condition.
+avid|adjective|very enthusiastic|He's an avid reader of soccer biographies.
+cagey|adjective|cautious about giving information|The coach was cagey about the lineup.
+compendium|noun|a collection of concise information|The book is a compendium of tactics.
+crestfallen|adjective|sad and disappointed|The crestfallen team trudged off after the loss.
+desecrate|verb|to treat something sacred with disrespect|Vandals desecrated the memorial.
+duress|noun|threats or force used to make someone act|He signed the confession under duress.
+engross|verb|to absorb all of someone's attention|The match engrossed the whole family.
+exorcise|verb|to drive out an evil spirit; to get rid of something bad|The win exorcised the memory of last year's final.
+formulate|verb|to create or express carefully|The coach formulated a plan for the second half.
+hamper|verb|to hinder or obstruct|Injuries hampered the team all season.
+immigrate|verb|to come to live permanently in a foreign country|Her family immigrated to Texas.
+incontrovertible|adjective|impossible to deny or dispute|The video was incontrovertible proof of the foul.
+intact|adjective|not damaged; whole|The trophy survived the move intact.
+laconic|adjective|using very few words|His laconic reply was just "fine."
+malevolent|adjective|wishing harm to others|The malevolent villain plotted revenge.
+muddle|verb|to confuse or mix up|Nerves muddled his thinking on the exam.
+ominous|adjective|suggesting something bad is coming|Ominous clouds gathered before kickoff.
+penitent|adjective|feeling sorry for wrongdoing|The penitent boy apologized to his sister.
+plutocrat|noun|a person whose power comes from wealth|The plutocrat bought the club outright.
+proliferate|verb|to increase rapidly in number|Youth leagues have proliferated across the state.
+rancor|noun|long-lasting bitterness or resentment|Years of rancor divided the two clubs.
+revamp|verb|to give a new and improved form|The league revamped its playoff format.
+seedy|adjective|shabby and disreputable|The seedy motel had flickering lights.
+submissive|adjective|meekly obedient|The submissive dog rolled over at once.
+tenacious|adjective|holding firmly; persistent|A tenacious defender never gives up.
+ubiquitous|adjective|present everywhere|Phones are ubiquitous in the hallway.
+visionary|noun|a person with original ideas about the future|The visionary coach changed how the game is played.
+# Group 18 · accentuate
+accentuate|verb|to emphasize; to make more noticeable|The red stripe accentuates the jersey.
+allege|verb|to claim without proof|The report alleges that funds went missing.
+apparition|noun|a ghost or ghostlike image|An apparition seemed to float down the hall.
+axiom|noun|a statement accepted as obviously true|"Practice makes better" is an axiom in sports.
+calamity|noun|a disaster|The flood was a calamity for the farmers.
+compile|verb|to collect and put together|She compiled the stats into one sheet.
+crucible|noun|a severe test or trial|The final was a crucible for the young keeper.
+desiccate|verb|to dry out completely|The sun desiccated the field.
+ebb|verb|to recede or decline|His energy ebbed in the last ten minutes.
+engulf|verb|to surround and swallow up|Flames engulfed the shed.
+expedient|adjective|convenient and practical, even if not quite right|Skipping the warm-up was expedient but foolish.
+forswear|verb|to give up or renounce|He forswore soda for the season.
+haphazard|adjective|lacking order or planning|The haphazard packing left the boots behind.
+imminent|adjective|about to happen|A storm was imminent.
+incorrigible|adjective|not able to be corrected or reformed|The incorrigible prankster struck again.
+integrate|verb|to combine into a whole|The new players integrated quickly.
+languid|adjective|slow, relaxed, and lacking energy|The languid cat stretched in the sun.
+maleficent|adjective|causing harm; evil|The maleficent spell cursed the kingdom.
+malformed|adjective|badly shaped|The malformed ball wouldn't roll straight.
+multiplicity|noun|a large number or variety|There is a multiplicity of reasons to train.
+omnipotent|adjective|having unlimited power|In the story the wizard is omnipotent.
+poise|noun|graceful, calm confidence|She showed poise at the penalty spot.
+prompt|adjective|done without delay; on time|A prompt reply is appreciated.
+rapacious|adjective|aggressively greedy|The rapacious agent demanded half the salary.
+revere|verb|to respect deeply|Fans revere the club's founder.
+self-effacing|adjective|modest; not drawing attention to oneself|The self-effacing star credited her teammates.
+subordinate|adjective|lower in rank or importance|A subordinate officer reports to the captain.
+tentative|adjective|not certain or fixed; hesitant|We have a tentative date for the trip.
+umbrage|noun|offense or annoyance|She took umbrage at the joke.
+vivacious|adjective|lively and animated|The vivacious host kept the party going.
+# Group 19 · acclaim
+acclaim|noun|enthusiastic public praise|The film opened to wide acclaim.
+allegorical|adjective|telling a story with a hidden meaning|The allegorical tale is really about greed.
+appease|verb|to calm someone by giving in to their demands|A cookie appeased the crying toddler.
+banal|adjective|boring and unoriginal|The speech was full of banal phrases.
+callous|adjective|cruelly insensitive|A callous remark about the injury upset everyone.
+complacent|adjective|smug and uncritical satisfaction with oneself|After winning, the team grew complacent.
+crux|noun|the most important point|The crux of the argument is cost.
+despondent|adjective|in low spirits from loss of hope|He was despondent after failing the test.
+ebullient|adjective|cheerful and full of energy|The ebullient crowd cheered every goal.
+enigma|noun|a person or thing that is mysterious|The disappearance remains an enigma.
+expenditure|noun|the spending of money; the amount spent|The club's expenditure rose this year.
+fortitude|noun|courage in facing pain or difficulty|She showed fortitude during the long recovery.
+harangue|noun|a long, angry speech|The coach's halftime harangue lasted ten minutes.
+immortalize|verb|to make famous forever|The statue immortalizes the club's greatest player.
+incriminate|verb|to make someone appear guilty|The text messages incriminated him.
+integrity|noun|honesty and strong moral principles|A referee needs integrity.
+languish|verb|to lose strength; to be neglected|The team languished at the bottom of the table.
+malicious|adjective|intending to do harm|A malicious rumor spread online.
+mundane|adjective|dull and ordinary|Laundry is a mundane chore.
+omnipresent|adjective|present everywhere at once|Advertising is omnipresent in the stadium.
+pensive|adjective|deeply thoughtful, often with some sadness|He looked pensive on the bus home.
+polarize|verb|to divide into two sharply opposed groups|The new rule polarized the fans.
+propensity|noun|a natural tendency|He has a propensity for late goals.
+rapturous|adjective|full of intense joy|The rapturous crowd sang for an hour.
+revulsion|noun|a strong feeling of disgust|The smell filled her with revulsion.
+sequester|verb|to isolate or set apart|The jury was sequestered in a hotel.
+subsequent|adjective|coming after something in time|Subsequent tests confirmed the result.
+tenuous|adjective|very weak or slight|His grip on the lead was tenuous.
+unanimous|adjective|fully in agreement|The vote was unanimous.
+vivify|verb|to give life or energy to|The new signing vivified the attack.
+# Group 20 · acclimate
+acclimate|verb|to adjust to a new climate or situation|It took a week to acclimate to the altitude.
+alleviate|verb|to make less severe|Ice alleviated the swelling.
+amenable|adjective|open to suggestion; easily persuaded|The coach was amenable to the change.
+baneful|adjective|causing harm or ruin|Laziness had a baneful effect on his grades.
+cajole|verb|to persuade with flattery or coaxing|She cajoled her brother into helping.
+camaraderie|noun|friendship and trust among a group|Camaraderie in the locker room was strong.
+compliant|adjective|willing to obey rules|A compliant player follows instructions.
+detract|verb|to take away from the value of something|The rain didn't detract from the fun.
+eccentric|adjective|unconventional and slightly strange|The eccentric inventor wore two hats.
+enlighten|verb|to give greater knowledge or understanding|The documentary enlightened us about the sport's history.
+explicate|verb|to explain in detail|The teacher explicated the poem line by line.
+fortuitous|adjective|happening by lucky chance|A fortuitous bounce set up the goal.
+hardy|adjective|strong and able to endure difficult conditions|Hardy plants survive the frost.
+immutable|adjective|unchangeable|The laws of physics are immutable.
+incumbent|adjective|currently holding an office; necessary as a duty|The incumbent mayor won again.
+interment|noun|burial|The interment took place at the old cemetery.
+languor|noun|a pleasant tiredness or laziness|A summer languor settled over the porch.
+malign|verb|to speak harmful untruths about|The article maligned the coach unfairly.
+munificent|adjective|extremely generous|A munificent donor funded the new pitch.
+omniscient|adjective|knowing everything|The narrator of the novel is omniscient.
+penultimate|adjective|second to last|The penultimate game decided the title.
+pompous|adjective|self-important and showy|The pompous speaker bragged for an hour.
+propitiate|verb|to win the favor of; to appease|They propitiated the angry fans with free tickets.
+rarefy|verb|to make thinner or less dense; to refine|The air rarefies at high altitude.
+rhetoric|noun|the art of persuasive speaking or writing|The candidate's rhetoric was powerful but empty.
+serendipitous|adjective|occurring by happy chance|A serendipitous meeting led to the job offer.
+subservient|adjective|too willing to obey others|The subservient assistant never said no.
+tepid|adjective|lukewarm; showing little enthusiasm|The reviews were tepid.
+unctuous|adjective|excessively flattering; oily|The unctuous salesman praised everything we touched.
+volatile|adjective|likely to change suddenly; explosive|The volatile striker argued with everyone.
 # Starter set
 abhor|verb|to hate deeply|She abhors cruelty to animals.
 acquiesce|verb|to accept reluctantly but without protest|He acquiesced to the new rules.
@@ -1009,6 +1360,769 @@ Column A: 2x · Column B: x + x|drill|C, they're equal|2x means x + x. They're t
 1/10 = ?|convert|0.1 = 10%|
 Percent increase or decrease: divide by what?|rule|Always the ORIGINAL starting value.|From 40 to 50: 10 ÷ 40 = 25% increase.
 `;
+/* ============================================================
+   SENTENCES — ISEE sentence completion. "n|sentence|A|B|C|D|answer|why". Blanks are ______, two-blank items use (i)______ and (ii)______.
+   ============================================================ */
+const SENT_TEXT = `
+# One blank
+1|The glassblower's apprentice, still ______ at the furnace, ruined three vases before her hands learned the patience the craft demanded.|deft|maladroit|serene|idle|B|She broke three vases before her hands "learned the patience," so at the start she was clumsy at the work. Maladroit means clumsy. Deft means the opposite, skilled with your hands. Serene means calm, which says nothing about being clumsy, and idle would mean she was not working at all.
+2|The bridge's engineer prized ______ above ornament, paring the structure down to the few steel ribs the load actually required.|extravagance|symmetry|economy|tradition|C|He cut the bridge down to only the steel it needed. Economy here means using as little as possible and wasting nothing. Extravagance means using far more than you need, the opposite. Symmetry means both sides match, and tradition means doing it the old way. Neither is what cutting things down shows.
+3|Reviewers expecting a tell-all were met instead with an ______ portrait that hinted at the actor's struggles without ever naming them outright.|explicit|exhaustive|understated|sensational|C|The book hinted at his struggles and never said them straight out. Understated means saying less than you could, holding back. Explicit means stated plainly and sensational means shocking and loud, and both describe the tell-all the reviewers expected and did not get. Exhaustive means covering every detail, which is about how much, not how quiet.
+4|A ______ recordkeeper, the curator logged every loan, every repair, and every change of light to which each painting had been exposed.|careless|reluctant|cheerful|meticulous|D|He wrote down every loan, every repair, and every change in the light. Meticulous means careful about every small detail. Careless is the opposite. Reluctant means not wanting to, and cheerful is a mood. Neither says how carefully someone works.
+5|Engineers stressed that the repair was strictly ______, a stopgap meant to hold only until the permanent span could be built.|provisional|permanent|decorative|unnecessary|A|The repair was a stopgap, something to hold only until the real bridge got built. Provisional means temporary, meant to last for now and no longer. Permanent means it lasts forever, the opposite of a stopgap. Decorative means added to look nice, and unnecessary means not needed at all.
+6|Years of ridicule left the inventor oddly ______ to criticism; by the time his designs succeeded, no review, however harsh, could wound him.|vulnerable|attentive|grateful|impervious|D|No review, however harsh, could hurt him anymore. Impervious means nothing can get through to you. Vulnerable means easy to hurt, the opposite. Attentive means paying close attention and grateful means thankful, and neither is about being unbothered.
+7|Where her rivals issued ______ denials, the chairwoman answered every charge plainly, naming dates, sums, and the people involved.|candid|evasive|lengthy|polite|B|The chairwoman answered plainly, with dates and names. Her rivals did the opposite, so their denials dodged the question. Evasive means avoiding a straight answer. Candid means honest and direct, which describes her, not them. Lengthy means long and polite is about manners.
+8|The agency's follow-up study merely ______ the original, repeating its findings almost word for word without adding a single new fact.|contradicted|recapitulated|broadened|condensed|B|The new study repeated the old one word for word and added nothing. Recapitulated means went back over the same thing again. Contradicted means said the opposite. Broadened means made bigger and condensed means made shorter. Repeating in full is none of those.
+9|Voters had grown weary of ______ promises; this candidate's habit of naming exact costs and deadlines struck them as bracingly honest.|specific|generous|frequent|vague|D|Voters were tired of one kind of promise, and this candidate stood out because he gave exact costs and dates. So the promises they were tired of had no details in them. Vague means unclear, with nothing specific. Specific means exact, which describes him instead. Generous and frequent, meaning it happens often, have nothing to do with being unclear.
+10|The novel's humor is ______ rather than cruel: it teases its characters gently and never holds them up for the reader's contempt.|affectionate|savage|accidental|constant|A|The humor teases gently and never makes the reader look down on anyone. Affectionate means warm and fond. Savage means cruel, which the sentence already rules out. Accidental means by mistake and constant means all the time, and neither describes warmth.
+11|Because the survey results were ______, pointing in several directions at once, the panel refused to issue any firm recommendation.|definitive|inconclusive|outdated|abundant|B|The results pointed several ways at once, so nobody could tell what they proved. Inconclusive means it settles nothing. Definitive means it settles the question for good, the opposite. Outdated means too old and abundant means there is plenty of it, and neither explains why the panel could not decide.
+12|Once a lively town square, the plaza had grown ______, its shuttered shops and empty benches visited now only by pigeons.|crowded|elegant|desolate|modern|C|The shops are shuttered, the benches are empty, and only pigeons come now. Desolate means empty and abandoned. Crowded is the opposite. Elegant means stylish and modern means new, and neither is about being empty.
+13|The scientist warned that a single striking result, however exciting, was too ______ a basis for so sweeping a claim.|solid|recent|costly|flimsy|D|One striking result is not enough to hold up a huge claim. Flimsy means weak, not able to carry weight. Solid means strong, the opposite. Recent means it happened lately and costly means expensive, and neither describes weak evidence.
+14|Far from the ______ tyrant portrayed by his enemies, the coach turned out to be patient with beginners and quick to share credit.|gentle|famous|elderly|domineering|D|The real coach is patient and quick to share credit, and "far from" tells you his enemies described the opposite kind of man. Domineering means bossy, always pushing people around. Gentle describes the real coach, not the story about him. Famous and elderly do not clash with being patient.
+15|Clever though it seemed, the essay's argument was ______, resting on a comparison that fell apart the moment one examined it closely.|sound|specious|lengthy|modest|B|The argument looks clever until you check it, and then it falls apart. Specious means it seems true but is not. Sound means solid and correct, the opposite. Lengthy means long and modest means not boastful, and neither is about being wrong.
+16|Because she had learned to read the smallest change in his expression, his attempt to seem ______ about the news fooled no one.|delighted|indifferent|furious|confused|B|She could read the smallest change in his face, so she saw through the act. He was trying to look like he did not care about the news. Indifferent means not caring either way. Delighted, furious, and confused are feelings he would be showing, not hiding.
+17|Meant to simplify the rules, the new policy instead made them more ______, piling on exception after exception.|accessible|popular|convoluted|familiar|C|The policy was supposed to make the rules simpler, and instead it piled on exception after exception. Convoluted means twisted and hard to follow. Accessible means easy to use or understand, the opposite. Popular and familiar do not describe being tangled.
+18|The veteran reporter was famous for her ______: she checked every claim twice and refused to print a fact she could not confirm.|speed|charm|scrupulousness|ambition|C|She checked every claim twice and refused to print anything she could not confirm. Scrupulousness means being extremely careful to get things right. Speed, charm, and ambition are other qualities a reporter might have, and none of them mean careful.
+19|His praise, though generous, felt ______, offered so freely and to so many that it had ceased to mean much at all.|hollow|sincere|rare|harsh|A|He praised so many people so freely that the praise stopped meaning anything. Hollow means empty inside, with nothing behind it. Sincere means honestly meant, the opposite. Rare means it almost never happens, which clashes with "offered so freely." Harsh means cruel, which is not praise at all.
+20|The witness's story was ______: each time she told it, small but telling details quietly changed.|reliable|detailed|inconsistent|brief|C|Small details changed every time she told it. Inconsistent means the parts do not match each other. Reliable means you can count on it, the opposite. Detailed means full of details and brief means short, and neither means the story keeps changing.
+21|The mountain air was so ______ that distant peaks, normally a soft blur, stood out as though cut from glass.|thin|cold|still|clear|D|Peaks that are usually a soft blur look sharp, like cut glass. Clear air is air you can see through for miles. Thin, cold, and still can all describe mountain air, but none of them explain why the view got sharper.
+22|The committee rejected the plan not because it was wrong but because it was ______, promising far more than the budget could ever deliver.|cautious|unrealistic|detailed|original|B|The plan promised far more than the budget could ever pay for. Unrealistic means it could never actually happen. Cautious means careful and holding back, which is the opposite of over-promising. Detailed and original, meaning new, are not reasons a plan fails.
+25|Recognition from the old foreman came so ______ — a grunt, a single nod a year — that the whole crew remembered each instance for months.|freely|loudly|rarely|falsely|C|A grunt and one nod a year is almost no praise, and the crew remembered each time for months. Rarely means almost never. Freely would mean he handed praise out all the time, the opposite. Loudly and falsely do not fit praise so scarce it gets remembered.
+26|The scientist refused to ______ her results, presenting the inconvenient data as plainly as the data that supported her theory.|publish|suppress|repeat|explain|B|She showed the data that hurt her theory just as plainly as the data that helped it, so she refused to hide anything. Suppress means to keep something hidden or push it down. Publish means to put it out in the open, which is what she did do. Repeat and explain are not about hiding.
+27|Once a ______ stream that children waded across in summer, the river had been swollen by weeks of rain into something no one dared approach.|raging|frozen|placid|polluted|C|Children used to wade across it, so back then the water was calm and low. Placid means calm and still. Raging describes the river after weeks of rain, which is its later state. Frozen means iced over and polluted means dirty, and neither fits kids wading across.
+28|The textbook chapter was a model of ______: in ten pages it laid out what rival books took fifty pages to muddle.|economy|confusion|length|repetition|A|Ten pages did what rival books needed fifty pages to do badly. Economy means getting a lot done with very little. Length and repetition, meaning saying the same thing again and again, describe the other books. Confusion is the opposite of a clear chapter.
+29|The press had painted the inventor as a ______ showman, so the shy, soft-spoken man who actually answered the door came as a surprise.|flamboyant|modest|brilliant|elderly|A|The real man is shy and soft-spoken, and the press had painted the opposite. Flamboyant means showy and loud, the kind who wants attention. Modest describes the real man, not the press version. Brilliant means very smart and elderly means old, and neither clashes with being shy.
+30|The new manager's habit of ______ in every small decision soon exhausted a staff that had been used to working on its own.|trusting|meddling|investing|delegating|B|The staff was used to working on its own, and the new manager got into every small decision. Meddling means butting into things that are not yours to handle. Trusting and delegating, which means handing work to other people, describe the old hands-off way. Investing is about putting in money or effort.
+31|The evidence against the theory was ______ but not decisive: troubling enough to raise doubts, too thin to settle the matter.|suggestive|conclusive|irrelevant|overwhelming|A|The evidence raised doubts and could not settle anything. Suggestive means it hints at something without proving it. Conclusive means it proves the matter and overwhelming means there is far too much to argue with, and both clash with "too thin." Irrelevant would mean it had nothing to do with the theory.
+32|His apology, though loud and public, struck everyone as ______, offered less from regret than from a wish to end the controversy.|heartfelt|tearful|overdue|calculated|D|He apologized to make the trouble go away, not because he felt bad. Calculated means planned for effect. Heartfelt means truly felt, which is the motive the sentence rules out. Tearful means crying and overdue means late, and neither tells you why he apologized.
+33|Carefully worded to name no one and to recommend nothing, the report was so ______ that every faction could read into it whatever it pleased.|precise|vague|hostile|brief|B|The report names nobody and recommends nothing, so every side could read it their own way. Vague means unclear, open to any reading. Precise means exact, the opposite. Hostile means angry and brief means short, and neither explains why every faction was satisfied.
+34|After years of ______ obedience, the once-loyal officer began, quietly at first, to question the orders he was given.|unquestioning|reluctant|brief|public|A|He was loyal for years and only later started asking questions. Unquestioning means going along without ever asking why. Reluctant means unwilling, which clashes with loyal. Brief and public do not describe years of obedience.
+35|The novel's setting is so ______ that readers feel they could find their way through its imaginary city by memory alone.|faint|dull|vivid|brief|C|Readers feel they could find their way through the imaginary city from memory. Vivid means so clear it feels real. Faint means barely there and dull means boring, and both clash with a setting you can picture. Brief is about length.
+36|The treaty brought not peace but a ______ calm, an uneasy pause in which both sides quietly prepared for the next round of fighting.|lasting|joyful|official|fragile|D|Both sides are quietly getting ready to fight again, so the calm could break any minute. Fragile means easy to break. Lasting means it holds for a long time, the opposite. Joyful and official do not describe an uneasy pause.
+46|Visitors had expected the renovated library to feel bright and open, and so they were surprised to find its reading rooms oddly ______, receiving little of the daylight the architects had promised.|spacious|airy|ornate|dim|D|They expected bright and open, and they were surprised, so the rooms turned out the opposite of bright. The rooms get little daylight. Dim means there is not much light. Spacious means roomy and airy means open and light, which is what they expected. Ornate means covered in fancy decoration, which is not about light.
+47|The senator was known for her ______ replies: she could speak for several minutes and still leave reporters unsure where she actually stood.|evasive|candid|concise|decisive|A|She can talk for several minutes and reporters still cannot tell where she stands. Evasive means dodging a straight answer. Candid means honest and direct and concise means short and to the point, and both are the opposite of talking that long without saying anything. Decisive means quick to decide.
+48|Far from being the ruin its rivals had predicted, the company's bold gamble proved ______, doubling its share of the market within a single year.|disastrous|modest|premature|lucrative|D|The gamble doubled the company's share of the market in a year. Lucrative means it made a lot of money. Disastrous is the ruin her rivals predicted and did not get. Modest means small and premature means too early, and neither fits doubling.
+49|The coach's calm did not signal indifference; it was a ______ steadiness, the product of years spent learning not to panic when a game slipped away.|accidental|fragile|hard-won|effortless|C|His calm came from years of learning not to panic. Hard-won means you had to work for it. Accidental would mean it happened by luck. Fragile means easy to break and effortless means it takes no work, and years of practice rule both out.
+50|Because the report's authors were reluctant to overstate their findings, they framed even their strongest conclusions in ______ language, full of 'mays' and 'mights.'|forceful|poetic|technical|tentative|D|They did not want to overstate, so they filled even their strongest conclusions with "may" and "might." Tentative means unsure, not committing. Forceful means strong and pushy, the opposite. Poetic and technical describe a style, not how sure someone is.
+51|The novelist's later style was so ______ that a single sentence might wander through three subjects before arriving, at last, at its point.|terse|transparent|rhythmic|discursive|D|One sentence wanders through three subjects before it reaches its point. Discursive means it rambles and wanders. Terse means very short, the opposite. Transparent means easy to see through and rhythmic is about sound.
+52|Once a ______ supporter of the policy, the governor grew quieter about it as evidence of its costs accumulated, until at last she stopped mentioning it at all.|reluctant|vocal|secret|former|B|She got quieter and quieter until she stopped mentioning it, so at the start she was loud about it. Vocal means speaking up a lot. Reluctant means unwilling and secret means hidden, and both clash with growing quieter over time. Former would mean she had already stopped, which is where she ends, not where she starts.
+53|The investigation found no single villain, only a ______ of small failures, each minor on its own but disastrous in combination.|absence|rejection|accumulation|celebration|C|There was no single villain, just many small failures that added up to a disaster. Accumulation means a pile that builds up over time. Absence means nothing is there, which contradicts the failures. Rejection and celebration have nothing to do with failures adding up.
+54|The diplomat's gift was for making rivals feel heard without ever ______ anything of substance, so that talks advanced while she conceded nothing.|demanding|surrendering|misunderstanding|recording|B|She made rivals feel listened to and still gave up nothing. Surrendering means handing over what you were holding. Demanding means asking for more, which is the other side of the table. Misunderstanding and recording do not fit giving something up.
+55|His apology felt ______: it named the wrong he had done, accepted the blame squarely, and asked for nothing in return.|grudging|rehearsed|sincere|premature|C|He named what he did wrong, took the blame, and asked for nothing back. Sincere means truly meant. Grudging means done unwillingly and rehearsed means practiced like a script, and both would make the apology feel fake. Premature means too early, which is about timing.
+56|The textbook's explanations were admirably ______, reducing tangled arguments to a few clear steps a beginner could follow.|convoluted|exhaustive|lucid|controversial|C|Tangled arguments became a few clear steps a beginner could follow. Lucid means clear and easy to understand. Convoluted means twisted and hard to follow, the opposite. Exhaustive means it covers everything, which is about how much. Controversial means people argue about it.
+57|The comedian's delivery appeared ______, flowing smoothly without hesitation, although every pause and supposedly spontaneous aside had been carefully rehearsed.|tedious|effortless|hostile|lengthy|B|The delivery flowed with no hesitation, though every pause had been rehearsed ahead of time. Effortless means it looks like it takes no work. Tedious means boring, hostile means unfriendly, and lengthy means long, and none of them describe a smooth delivery.
+67|Surprisingly ______, the review did not tear the novel apart as everyone expected; instead it praised the book's quiet strengths at length.|scathing|brief|gracious|confusing|C|Everyone expected the review to tear the novel apart, and instead it praised the book at length. Gracious means kind and generous in how you treat someone. Scathing means harsh and cutting, which is the review everyone expected. Brief means short, which clashes with "at length," and confusing does not fit praise.
+68|Since the witness altered small details each time she told the story, the jury came to regard her account as deeply ______.|unreliable|persuasive|detailed|sincere|A|The details changed every time she told the story, so the jury stopped trusting it. Unreliable means you cannot count on it. Persuasive means convincing and sincere means honestly meant, and both clash with a jury full of doubt. Detailed does not help when the details keep shifting.
+69|Contrary to the ______ figure his enemies described, the reformer proved patient, willing to listen, and slow to take offense.|timid|volatile|gifted|elderly|B|The real reformer is patient and slow to anger, and "contrary to" means his enemies described the opposite. Volatile means quick to blow up. Timid means shy and afraid, which is not the opposite of patient. Gifted and elderly do not clash with staying calm.
+70|So ______ were the printed instructions that even careful readers finished them unsure of what they were supposed to do.|opaque|explicit|lengthy|polite|A|Careful readers finished the instructions and still did not know what to do. Opaque means you cannot see through it, so here it means unclear. Explicit means spelled out plainly, the opposite. Lengthy means long and polite is about manners, and neither explains the confusion.
+71|Celebrated at the time as a triumph, the treaty struck later historians as a ______ peace that merely postponed the next war.|lasting|generous|fragile|famous|C|The peace only delayed the next war. Fragile means easy to break. Lasting means it holds for a long time, the opposite of a peace that collapsed. Generous and famous say nothing about how long it held.
+72|Unwilling to ______ her conclusions prematurely, the scientist repeated the experiment enough times to rule out simple chance.|question|abandon|record|announce|D|She ran the experiment again and again before she would say anything publicly. Announce means to tell everyone. She was unwilling to do that too early. Question means to doubt, abandon means to give up, and record means to write down, and she kept doing all three while she waited.
+73|His apology felt ______: he said the right words, yet his tone made it clear he believed he had done nothing wrong.|sincere|hollow|eloquent|sudden|B|He said the right words and his tone showed he still thought he had done nothing wrong. Hollow means empty inside. Sincere means truly meant, the opposite. Eloquent means well spoken, which he was, and sudden is about timing. Neither explains the missing regret.
+74|Players who stayed ______ under pressure earned the coach's trust, keeping their heads while less disciplined opponents unraveled.|frantic|composed|talented|cheerful|B|They kept their heads while the other side fell apart. Composed means calm and in control. Frantic means panicked, the opposite. Talented and cheerful are good things to be, and neither means calm under pressure.
+75|What began as a ______ disagreement over a single word grew, within an hour, into a quarrel that split the committee for years.|violent|public|trivial|ancient|C|A single word started it, and only an hour later did it become a quarrel that lasted years. Trivial means small and unimportant. Violent is far too strong for how it began. Public means out in the open and ancient means very old, and neither contrasts with what it grew into.
+76|From the outset the essay's argument was ______, resting on a single assumption the writer never bothered to defend.|ironclad|shaky|elegant|familiar|B|The whole argument sits on one assumption the writer never defended. Shaky means unsteady, ready to fall. Ironclad means it cannot be broken, the opposite. Elegant means nicely made and familiar means already known, and neither describes a weak base.
+77|Instead of confronting the problem directly, the manager chose to ______, offering vague promises while quietly doing nothing.|temporize|apologize|resign|confess|A|He avoided the problem, handed out vague promises, and did nothing. Temporize means to stall, to talk instead of acting. Apologize, resign, which means to quit your job, and confess are all definite actions, and those are exactly what he was avoiding.
+78|The old bridge, though visibly ______, still carried traffic, its rust and cracks somehow holding together another year.|decrepit|sturdy|modern|graceful|A|Rust and cracks, and it barely holds up one more year. Decrepit means old and falling apart. Sturdy means strong, the opposite, and modern means new. Graceful describes how something looks, not whether it is worn out.
+# Two blanks
+23|The treaty was (i)______ in its language yet (ii)______ in its effect: every clause hedged the obligations it appeared to create, and within a year each signatory was doing exactly what it had done before.|blunt . . . sweeping|cautious . . . negligible|cautious . . . decisive|hostile . . . lasting|B|Every clause hedges, which means it softens the promise so nobody is really tied down. That is cautious language. A year later every country acted exactly as before, so the treaty changed nothing. Negligible means so small it does not matter. Blunt means direct and plain, the opposite of hedging, and decisive would mean it settled things.
+24|The teacher was neither ______ nor ______: she neither excused sloppy work to spare feelings nor tore into a struggling student to prove a point.|brief . . . late|careful . . . fair|famous . . . early|indulgent . . . harsh|D|She does not let sloppy work slide, and she does not tear a struggling student down. Indulgent means too soft, letting people off easy. Harsh means too rough and cruel. The sentence names both faults she avoids, so the pair has to be too soft and too mean. Careful and fair are good qualities, and no teacher is praised for being neither.
+37|The new safety rules were (i)______ on paper and (ii)______ in practice: the manual ran to ninety pages, and in eleven months no inspector had set foot on the factory floor.|vague . . . strict|thorough . . . unenforced|thorough . . . binding|lax . . . ignored|B|A ninety-page manual covers everything, so on paper the rules are thorough, meaning complete and detailed. No inspector came in eleven months, so nobody made anyone follow them. Unenforced means the rules exist and nobody makes you obey. Vague and lax, meaning loose and not strict, clash with a ninety-page manual, and binding means you are required to obey, which clashes with the missing inspections.
+38|On paper the scheme looked (i)______; in practice it proved (ii)______, falling apart the moment anyone tried to apply its elegant rules.|flawed . . . brilliant|sound . . . unworkable|popular . . . admired|simple . . . clear|B|The rules looked elegant written down, and they fell apart the moment anyone used them. Sound means solid and sensible. Unworkable means it cannot actually be done. The other pairs erase the gap between how it looked and how it worked.
+39|So (i)______ was the singer's control that what should have been the hardest passages sounded utterly (ii)______, as if no effort were involved at all.|poor . . . strained|loud . . . harsh|complete . . . effortless|brief . . . difficult|C|The hardest passages sounded easy, "as if no effort were involved." That happens when a singer's control is total. Complete means nothing is outside her command. Effortless means it looks like it takes no work. The other pairs break the link between full control and the easy sound.
+40|The biography neither (i)______ its subject nor (ii)______ him: it simply set down his virtues and his failings and left the reader to judge.|ignores . . . studies|flatters . . . condemns|praises . . . admires|invents . . . creates|B|The book sets down his good sides and his bad sides and lets the reader judge, so it avoids both extremes. Flatters means praises someone more than they deserve. Condemns means declares them bad. Those are the two extremes a fair book stays between.
+41|Although the audience found the play (i)______, the critics dismissed it as (ii)______, complaining that its easy charm concealed no real ideas.|boring . . . profound|strange . . . clear|delightful . . . shallow|short . . . long|C|The audience enjoyed the play, and the critics said its charm hid no ideas. Delightful means enjoyable. Shallow means there is nothing underneath the surface. The other pairs break that split between what the crowd felt and what the critics said.
+42|The reforms were introduced with such (i)______ that few noticed them at all, yet within a decade they had (ii)______ the entire system.|quietness . . . transformed|fanfare . . . preserved|violence . . . ignored|delay . . . weakened|A|Almost nobody noticed the reforms arriving, and ten years later the whole system was different. Quietness means they came without noise or attention. Transformed means completely changed. The word "yet" tells you the two blanks have to point opposite ways.
+43|The explorer's notes are valued less for their (i)______ — many of his measurements were wrong — than for their (ii)______, the vivid record they give of a vanished world.|accuracy . . . vividness|brevity . . . dullness|fame . . . obscurity|length . . . shortness|A|Many of his measurements were wrong, so the notes are not valued for being correct. Accuracy means being correct. They are valued for the picture they paint, and vividness means it feels real and clear. The sentence hands you a clue for each blank, one on each side of "than."
+44|A teacher of rare (i)______, she could make a struggling student feel not (ii)______ but simply on the verge of understanding.|harshness . . . clever|fame . . . tired|wealth . . . poor|tact . . . stupid|D|She could make a struggling student feel close to understanding instead of feeling dumb. Tact means knowing how to say hard things kindly. The student does not feel stupid. The other pairs do not connect the teacher's gift to how the student feels.
+45|The city's growth was so (i)______ that maps were out of date almost as soon as they were printed, and longtime residents grew (ii)______ in streets they had known all their lives.|slow . . . comfortable|planned . . . confident|modest . . . famous|rapid . . . lost|D|Maps go out of date as fast as they are printed, so the city is changing very fast. Rapid means quick. People who lived there all their lives no longer know the streets, so they feel lost. The other pairs do not link fast change to that confusion.
+58|The plan was (i)______ in outline yet (ii)______ in detail: it named an ambitious goal but never said who would pay for the work, who would carry it out, or when any of it would begin.|modest . . . thorough|bold . . . exhaustive|vague . . . precise|bold . . . empty|D|The plan names an ambitious goal, so in outline it is bold, meaning daring. It never says who pays, who does the work, or when it starts, so there is nothing inside it. Empty means nothing is there. Thorough and exhaustive both mean complete in detail, which clashes with all those missing answers.
+59|The biographer admired her subject's public (i)______, yet the private letters revealed a man so (ii)______ that even close friends rarely knew his true opinions.|temper . . . open|wealth . . . generous|warmth . . . guarded|fame . . . honest|C|She admired what the public saw, and the private letters show a man who kept his real opinions to himself. Warmth means being friendly and open. Guarded means holding back what you think. Even close friends did not know his opinions, which is the clue for the second blank.
+60|Critics expected the sequel to be (i)______, a tired repeat of the original; instead it was so (ii)______ that it seemed the work of a different, bolder author entirely.|inventive . . . dull|derivative . . . original|popular . . . famous|brief . . . long|B|Critics expected a tired repeat of the original, and derivative means copied from something else. Instead it read like a different, bolder author, so it was original, meaning new and its own. The word "instead" tells you the two blanks point opposite ways.
+61|Because the evidence was so (i)______, the jury found it impossible to reach the (ii)______ verdict the judge had urged, and the trial ended without a decision.|conclusive . . . swift|damaging . . . guilty|plentiful . . . fair|ambiguous . . . unanimous|D|The trial ended with no decision, so the jury could not agree. Ambiguous means it can be read more than one way. Unanimous means everyone agrees, which is the verdict the judge pushed for and did not get.
+62|The new manager's (i)______ tone won early goodwill, but her refusal to (ii)______ on even trivial matters soon convinced the staff that the friendliness was only a surface.|harsh . . . insist|nervous . . . speak|formal . . . relax|gracious . . . compromise|D|Her friendly tone won people over at first, and then she would not give an inch on anything. Gracious means kind and welcoming. Compromise means each side gives up a little so both can agree. Refusing that even on small matters is what showed the friendliness was only a surface.
+63|The scientist warned that a theory's (i)______ should not be mistaken for its truth; an idea can be beautifully (ii)______ and still be entirely wrong.|difficulty . . . obscure|elegance . . . consistent|age . . . ancient|fame . . . popular|B|A theory can look beautiful and still be wrong. Elegance means it is neat and pleasing in the way it fits together. Consistent means its parts do not contradict each other. The warning is that looking good is not the same as being true.
+64|Where her predecessor had been (i)______, addressing the public only through written statements, the new spokeswoman was strikingly (ii)______, answering questions for hours without notes.|reclusive . . . accessible|popular . . . shy|careless . . . precise|brief . . . tedious|A|The old spokeswoman only sent written statements, so she stayed away from people. Reclusive means keeping away from others. The new one answers questions for hours with no notes, so she is easy to reach and talk to. Accessible means easy to get to.
+65|The proposal was (i)______ in theory but (ii)______ in practice, since it assumed a level of cooperation that the rival agencies had never once shown.|sound . . . unworkable|flawed . . . sound|simple . . . easy|vague . . . clear|A|The idea makes sense on paper, and sound means solid and sensible. It needs rival agencies to cooperate, and they never have, so it cannot actually work. Unworkable means it cannot be done in practice.
+66|Although the medicine produced an immediate and (i)______ improvement, its effects proved (ii)______, fading within days and leaving the patient no better than before.|dramatic . . . lasting|dramatic . . . fleeting|minor . . . permanent|painful . . . gradual|B|The improvement came at once and was big, and dramatic means large enough to notice right away. It faded in days and left the patient no better than before. Fleeting means it lasts only a short time.
+79|The witness was (i)______ about the small details yet (ii)______ on the one question that mattered: she could name the colour of the door and the hour on the clock, but not the face of the person who walked through it.|vague . . . emphatic|precise . . . silent|precise . . . forthcoming|hostile . . . brief|B|She named the colour of the door and the hour on the clock, so on small details she was precise, meaning exact. On the one question that mattered, the face, she had nothing to say. Silent means saying nothing. Vague means unclear, which clashes with those exact details, and forthcoming means willing to tell you things, which clashes with the gap.
+80|In tone the senator's speech was ______, yet in substance it was ______, soothing the audience with warm phrases while committing to almost nothing.|reassuring . . . empty|hostile . . . detailed|dull . . . precise|frantic . . . generous|A|Warm phrases soothe the audience, so the tone is reassuring, meaning it makes people feel calm. He commits to almost nothing, so there is nothing inside the speech. Empty means nothing is there. The other pairs break either the warm tone or the missing content.
+81|Once ______ by collectors who paid huge sums for his canvases, the painter died ______, his final works unsold and his name half-forgotten.|ignored . . . wealthy|mocked . . . celebrated|copied . . . content|prized . . . destitute|D|Collectors paid huge sums for his work, so he was prized, meaning highly valued. He died with his last paintings unsold and his name nearly forgotten. Destitute means having nothing left. The sentence runs from high to low, and only this pair runs the same direction.
+82|In its goals the policy was ______, but in its execution it was ______, aiming to help everyone yet reaching almost no one.|modest . . . flawless|secret . . . popular|cruel . . . efficient|ambitious . . . clumsy|D|Trying to help everyone is aiming high, which is what ambitious means. Reaching almost no one means it was carried out badly. Clumsy means awkward and badly done. The word "but" tells you the two blanks point opposite ways.
+83|A skilled negotiator learns to be ______ without seeming ______, pressing hard for an advantage while leaving the other side room to save face.|weak . . . gentle|firm . . . harsh|silent . . . loud|honest . . . clear|B|Pressing hard for an advantage means standing your ground, which is what firm means. Leaving the other side room to save face means not humiliating them, and harsh means rough and cruel. The skill is doing the first without looking like the second.
+84|The documentary was praised for being ______ rather than ______, presenting the facts plainly and letting viewers reach their own conclusions.|shocking . . . gentle|brief . . . thorough|funny . . . serious|balanced . . . one-sided|D|Presenting the facts plainly and letting viewers decide is what balanced means, giving each side fair weight. One-sided means showing only one view. The words "rather than" tell you the second blank is the opposite of the first.
+85|Though the region looked ______ to outsiders, those who lived there knew how ______ its calm could be, with storms arriving without warning.|dangerous . . . reliable|crowded . . . peaceful|barren . . . fertile|tranquil . . . deceptive|D|From outside the region looks calm, and tranquil means calm and peaceful. The people who live there know storms arrive with no warning, so that calm lies to you. Deceptive means it makes you believe something untrue.
+86|The professor's questions were designed to ______ students, not to ______ them, pushing their thinking further rather than catching them out.|bore . . . excite|challenge . . . trap|praise . . . reward|confuse . . . teach|B|The questions push students to think further, and challenge means asking something hard on purpose. Catching them out would be a trap, a question set up to make you fail. The words "not to" tell you the second blank is the bad version of the first.
+87|His memoir was unusually ______, admitting failures that most public figures would rather ______ than confess to a reader.|guarded . . . reveal|cheerful . . . share|candid . . . conceal|brief . . . expand|C|He admits his failures, and candid means open and honest even when it costs you. Most public figures would rather hide theirs. Conceal means to hide. Guarded means holding back, which is the opposite of admitting failure.
+`;
+function hashStr(t) { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0; return h.toString(36); }
+const SENT = SENT_TEXT.trim().split("\n").reduce((acc, l) => { l = l.trim(); if (!l) return acc; if (l[0] === "#") { acc.g = l.slice(1).trim(); return acc; }
+  const p = l.split("|"); if (p.length < 8) return acc; acc.list.push({ id: "s" + hashStr(p[1]), g: acc.g, q: p[1], opts: [p[2], p[3], p[4], p[5]], ans: "ABCD".indexOf(p[6]), why: p[7] }); return acc; }, { g: "", list: [] }).list;
+
+/* ============================================================
+   SHOOTOUT SYNONYMS — "word: alt, alt, alt". Any of these counts as a goal in Shootout.
+   ============================================================ */
+const SYN_TEXT = `
+abase: humble, degrade, demean, humiliate
+adulterate: contaminate, taint, dilute, corrupt
+ancillary: secondary, supporting, auxiliary, extra
+boisterous: rowdy, noisy, loud, unruly
+contravene: violate, break, disobey, defy
+deficient: lacking, inadequate, insufficient, short
+disparate: different, unlike, dissimilar, distinct
+emancipate: free, liberate, release
+espionage: spying, surveillance, intelligence
+feasible: possible, doable, workable, practical
+glib: slick, smooth, superficial, shallow
+hubris: arrogance, pride, conceit, overconfidence
+impugn: challenge, question, dispute, attack
+ingratiate: flatter, charm, suck up
+irrelevant: unrelated, beside the point, unimportant, immaterial
+listless: lethargic, sluggish, weary, apathetic
+mettle: courage, spirit, grit, resolve
+numinous: spiritual, mysterious, holy, sacred
+panegyric: tribute, praise, eulogy, encomium
+philanthropy: charity, generosity, giving, benevolence
+prestigious: respected, esteemed, renowned, distinguished
+putrefy: rot, decay, decompose, spoil
+replete: full, filled, stuffed, abounding
+sardonic: mocking, sarcastic, cynical, scornful
+squalor: filth, dirt, wretchedness, poverty
+surpass: exceed, outdo, beat, top
+treatise: essay, paper, study, dissertation
+assuage: relieve, ease, soothe, calm
+circumspect: cautious, careful, wary, prudent
+verbose: wordy, long-winded, rambling, talkative
+abate: lessen, subside, decrease, diminish
+adversary: opponent, enemy, rival, foe
+anecdote: story, tale, account
+astute: sharp, shrewd, clever, perceptive
+bolster: support, strengthen, reinforce, boost
+circumstantial: indirect, inferred, incidental
+contrite: sorry, remorseful, apologetic, regretful
+dissonance: discord, conflict, disharmony, clash
+emasculate: weaken, undermine, deprive
+esteem: respect, admiration, regard, honor
+fecund: fertile, productive, fruitful, prolific
+gluttonous: greedy, voracious, ravenous
+hyperbole: exaggeration, overstatement
+impunity: exemption, immunity, freedom from punishment
+inimical: hostile, harmful, unfriendly, adverse
+irremediable: incurable, irreparable, hopeless, irreversible
+lithe: graceful, supple, flexible, limber
+migrate: move, relocate, travel, journey
+nymph: spirit, maiden, sprite
+pantomime: mime, gesture, dumb show
+phlegmatic: calm, unemotional, composed, stolid
+presumptuous: bold, forward, overconfident, arrogant
+quagmire: bog, swamp, mess, predicament
+reprehensible: disgraceful, shameful, deplorable, blameworthy
+sate: satisfy, fill, satiate, gratify
+squander: waste, blow, fritter, misspend
+surreal: dreamlike, bizarre, unreal, strange
+trenchant: sharp, incisive, cutting, forceful
+verboten: forbidden, banned, prohibited, taboo
+abdicate: resign, step down, give up, renounce
+adversity: hardship, difficulty, misfortune, trouble
+alacrity: eagerness, readiness, enthusiasm, willingness
+animosity: hostility, hatred, ill will, enmity
+asylum: refuge, shelter, sanctuary, protection
+bombastic: pompous, grandiose, inflated, pretentious
+conundrum: puzzle, riddle, problem, dilemma
+delectable: delicious, tasty, delightful, scrumptious
+distraught: upset, distressed, agitated, frantic
+embed: fix, lodge, implant, insert
+estrange: alienate, separate, distance
+feign: pretend, fake, simulate, sham
+goad: provoke, prod, urge, spur
+hypocritical: two-faced, insincere, phony, false
+inane: silly, foolish, senseless, pointless
+iniquitous: wicked, unjust, evil, sinful
+itinerant: traveling, wandering, roving, nomadic
+liturgy: ritual, service, rite, worship
+mince: chop, dice, soften, cut
+obdurate: stubborn, obstinate, unyielding, inflexible
+parable: fable, lesson, allegory, story
+pretentious: showy, pompous, affected, snobbish
+punctilious: meticulous, careful, precise, exact
+quail: flinch, cower, shrink, recoil
+reprimand: scold, rebuke, reproach, tell off
+satire: mockery, parody, ridicule, lampoon
+squelch: crush, silence, suppress, quash
+surreptitious: secret, sneaky, stealthy, covert
+trepidation: fear, dread, anxiety, nervousness
+verdant: green, lush, leafy, grassy
+aberration: anomaly, oddity, deviation, exception
+advocate: support, champion, back, promote
+annihilate: destroy, wipe out, obliterate, demolish
+atheist: nonbeliever, unbeliever, skeptic
+boor: oaf, lout, brute, clod
+clamor: uproar, noise, din, outcry
+convalesce: recover, recuperate, heal, mend
+deleterious: harmful, damaging, injurious, destructive
+dither: hesitate, waver, vacillate, stall
+embellish: decorate, adorn, exaggerate, ornament
+ethos: character, spirit, values, beliefs
+fervent: passionate, intense, ardent, zealous
+gouge: cut, scoop, gash, overcharge
+hypothetical: theoretical, supposed, imagined, assumed
+implacable: relentless, unappeasable, unforgiving, merciless
+inapt: unsuitable, inappropriate, unfit, wrong
+jargon: lingo, terminology, slang, buzzwords
+lofty: high, noble, grand, elevated
+misanthrope: hater, cynic, recluse, loner
+obfuscate: confuse, obscure, muddy, cloud
+paradox: contradiction, puzzle, absurdity
+pilgrimage: journey, trip, expedition, quest
+prevalent: widespread, common, frequent, rampant
+quandary: dilemma, predicament, difficulty, bind
+reprisal: retaliation, revenge, payback, vengeance
+saturate: soak, drench, flood, fill
+stagnant: still, motionless, sluggish, inactive
+surrogate: substitute, stand-in, replacement, proxy
+tribulation: suffering, trouble, hardship, ordeal
+vernal: spring, springlike, fresh
+abeyance: suspension, pause, hold, dormancy
+aesthetic: artistic, beautiful, visual, style
+annul: cancel, void, nullify, invalidate
+atone: make amends, repent, compensate, pay
+bourgeois: middle class, conventional, materialistic
+clandestine: secret, covert, hidden, underground
+convivial: friendly, lively, sociable, jolly
+delinquent: negligent, overdue, lawbreaking, truant
+diversity: variety, range, assortment, difference
+emblazon: display, decorate, inscribe, adorn
+eulogy: tribute, praise, elegy, speech
+fetish: fixation, obsession, charm, idol
+grandiloquent: pompous, bombastic, flowery, pretentious
+iconoclast: rebel, radical, nonconformist, dissenter
+inaugurate: begin, launch, open, install
+injurious: harmful, damaging, hurtful, detrimental
+jarring: shocking, harsh, grating, discordant
+logos: logic, reason, argument
+misconception: misunderstanding, mistake, fallacy, error
+obliterate: destroy, wipe out, erase, annihilate
+paramount: supreme, chief, foremost, most important
+pinnacle: peak, summit, top, height
+prevaricate: evade, lie, dodge, equivocate
+quarrelsome: argumentative, combative, contentious, belligerent
+reproof: rebuke, scolding, criticism, reprimand
+saturnine: gloomy, sullen, moody, dark
+staid: serious, sedate, sober, proper
+sustenance: food, nourishment, provisions, support
+trite: overused, stale, cliched, hackneyed
+verisimilar: realistic, believable, lifelike, plausible
+abhorrent: hateful, disgusting, repugnant, loathsome
+affable: friendly, pleasant, genial, warm
+antagonize: provoke, anger, irritate, alienate
+atrocity: outrage, horror, crime, brutality
+brash: bold, cocky, rude, reckless
+clemency: mercy, leniency, forgiveness, compassion
+convocation: assembly, gathering, meeting, conference
+delusion: illusion, misbelief, fantasy, hallucination
+divert: redirect, deflect, distract, entertain
+emeritus: retired, honorary, former
+euphemism: substitute, softening, polite term
+fickle: changeable, unpredictable, flighty, inconstant
+grandiose: grand, ambitious, showy, pompous
+idiom: expression, phrase, saying
+incarcerate: imprison, jail, lock up, confine
+innate: inborn, natural, inherent, instinctive
+jaunt: trip, outing, excursion, drive
+loquacious: talkative, chatty, garrulous, wordy
+misconstrue: misinterpret, misunderstand, misread
+oblivion: nothingness, obscurity, forgetfulness, void
+paramour: lover, sweetheart, mistress
+piquant: spicy, tangy, zesty, stimulating
+procure: obtain, acquire, get, secure
+quash: suppress, crush, cancel, squelch
+reprove: scold, rebuke, reprimand, admonish
+savant: genius, scholar, expert, master
+stance: position, attitude, viewpoint, posture
+suture: stitch, seam, thread
+trivial: unimportant, minor, petty, insignificant
+viable: workable, feasible, possible, practical
+abject: hopeless, wretched, miserable, degrading
+affect: influence, change, alter, pretend
+antecedent: forerunner, predecessor, precursor, ancestor
+atrophy: waste away, wither, weaken, shrink
+bravado: bluster, swagger, boldness, show
+clout: influence, power, pull, weight
+convoluted: complicated, complex, tangled, intricate
+demagogue: rabble-rouser, agitator, firebrand
+divulge: reveal, disclose, tell, leak
+eminent: famous, distinguished, renowned, prominent
+euphony: harmony, melody, sweetness
+filament: thread, fiber, strand, wire
+gratuitous: unnecessary, uncalled for, needless, unwarranted
+idiosyncrasy: quirk, peculiarity, habit, eccentricity
+inception: beginning, start, origin, birth
+innocuous: harmless, safe, inoffensive, mild
+jeer: mock, taunt, heckle, boo
+lout: oaf, boor, brute, thug
+miser: hoarder, penny pincher, skinflint, scrooge
+obscene: offensive, indecent, vulgar, shocking
+pejorative: negative, insulting, derogatory, disparaging
+pithy: brief, concise, terse, succinct
+prodigal: wasteful, extravagant, reckless, spendthrift
+quell: suppress, subdue, put down, calm
+repudiate: reject, deny, disown, renounce
+savory: tasty, salty, flavorful, appetizing
+sterling: excellent, first-rate, superb, outstanding
+swagger: strut, parade, boast, show off
+truant: absentee, skipper, delinquent
+vibrant: lively, energetic, vivid, bright
+abrasive: harsh, rough, grating, caustic
+affinity: liking, attraction, connection, fondness
+antediluvian: ancient, old-fashioned, outdated, prehistoric
+attest: confirm, verify, prove, certify
+brazen: bold, shameless, audacious, cheeky
+cloying: sickly sweet, sugary, saccharine, syrupy
+copious: abundant, plentiful, ample, profuse
+demoralize: discourage, dishearten, crush, deflate
+docile: obedient, compliant, gentle, tame
+emigrate: leave, move away, relocate, depart
+evanescent: fleeting, brief, vanishing, momentary
+finicky: fussy, picky, particular, fastidious
+gregarious: sociable, outgoing, friendly, social
+idolize: worship, adore, revere, admire
+inchoate: undeveloped, unformed, rudimentary, beginning
+innovate: invent, create, pioneer, modernize
+jingoism: nationalism, chauvinism, flag-waving
+lucrative: profitable, moneymaking, rewarding, well-paying
+misnomer: wrong name, mislabel, misnaming
+obscure: unclear, unknown, vague, hidden
+pariah: outcast, exile, reject, leper
+pittance: trifle, peanuts, pennies, small amount
+prodigious: enormous, huge, remarkable, immense
+querulous: complaining, whiny, petulant, grumbling
+repulsive: disgusting, revolting, repellent, gross
+savvy: shrewd, knowledgeable, smart, streetwise
+scurrilous: insulting, slanderous, abusive, scandalous
+sycophant: flatterer, yes-man, toady, bootlicker
+truce: ceasefire, peace, armistice, break
+vicarious: secondhand, indirect, substitute
+abridge: shorten, condense, cut, abbreviate
+affirm: confirm, assert, declare, state
+antiquity: ancient times, olden days, the past
+audacious: bold, daring, fearless, brave
+brevity: shortness, conciseness, briefness
+coalesce: merge, unite, combine, fuse
+cordial: friendly, warm, pleasant, genial
+denigrate: belittle, disparage, criticize, put down
+dogmatic: opinionated, rigid, inflexible, dictatorial
+emollient: soothing, softening, calming
+eviscerate: gut, disembowel, weaken, hollow out
+flagellate: whip, flog, lash, punish
+grotesque: hideous, ugly, distorted, monstrous
+idyllic: peaceful, perfect, blissful, picturesque
+incise: cut, carve, engrave, slice
+inordinate: excessive, unreasonable, immoderate, extreme
+jocular: joking, humorous, playful, funny
+ludicrous: absurd, ridiculous, laughable, silly
+mitigate: lessen, reduce, ease, alleviate
+obsequious: fawning, servile, groveling, sycophantic
+parody: spoof, imitation, satire, takeoff
+placate: calm, appease, pacify, soothe
+profane: vulgar, irreverent, blasphemous, crude
+query: question, inquiry, ask
+reputable: respected, reliable, trustworthy, respectable
+scant: little, meager, scarce, minimal
+stimulate: encourage, excite, spark, arouse
+synthetic: artificial, man-made, fake, manufactured
+truism: platitude, cliche, obvious truth
+vie: compete, contend, strive, struggle
+abscond: flee, run away, escape, bolt
+affluent: wealthy, rich, prosperous, well-off
+antithesis: opposite, contrast, reverse, converse
+augment: increase, enlarge, add to, boost
+brunt: force, impact, burden, weight
+coax: persuade, cajole, wheedle, urge
+corpulent: fat, obese, overweight, stout
+decry: condemn, denounce, criticize, disparage
+denounce: condemn, criticize, accuse, attack
+doleful: sad, mournful, sorrowful, gloomy
+empirical: observed, experimental, practical, factual
+exacerbate: worsen, aggravate, intensify, inflame
+flagrant: blatant, obvious, glaring, outrageous
+ignoble: dishonorable, shameful, base, low
+incisive: sharp, keen, penetrating, perceptive
+insidious: sneaky, subtle, treacherous, creeping
+jollity: merriment, cheer, fun, gaiety
+lugubrious: gloomy, mournful, dismal, sad
+obsolete: outdated, old-fashioned, extinct, out of date
+parsimonious: stingy, cheap, miserly, frugal
+placid: calm, peaceful, tranquil, serene
+prim: proper, prudish, formal, stiff
+proffer: offer, present, extend, hold out
+quiescent: inactive, dormant, quiet, still
+requital: repayment, retaliation, return, revenge
+scathing: harsh, severe, biting, withering
+stoic: unemotional, impassive, calm, uncomplaining
+tacit: unspoken, implied, understood, silent
+truncate: shorten, cut, trim, abbreviate
+vigilant: watchful, alert, attentive, wary
+abstemious: moderate, restrained, temperate, sparing
+affront: insult, offense, slight, snub
+apathy: indifference, unconcern, disinterest, lethargy
+auspicious: promising, favorable, lucky, hopeful
+brusque: abrupt, blunt, curt, gruff
+cobble: patch, throw together, improvise, assemble
+corroborate: confirm, verify, support, back up
+deplete: use up, exhaust, drain, reduce
+douse: drench, soak, extinguish, put out
+emulate: imitate, copy, mimic, follow
+exalt: praise, glorify, elevate, honor
+fleeting: brief, short-lived, momentary, passing
+guile: cunning, slyness, trickery, craftiness
+ignominious: shameful, disgraceful, humiliating, dishonorable
+incite: provoke, stir up, rouse, instigate
+insinuate: hint, imply, suggest, intimate
+judicious: wise, sensible, prudent, sound
+luminous: bright, glowing, radiant, shining
+mollify: calm, soothe, appease, pacify
+obstinate: stubborn, headstrong, inflexible, obdurate
+partisan: biased, one-sided, prejudiced, factional
+plagiarize: copy, steal, pirate, lift
+profound: deep, intense, thoughtful, wise
+quintessential: typical, classic, ideal, perfect
+rescind: cancel, revoke, repeal, withdraw
+scion: descendant, heir, offspring, child
+stolid: impassive, unemotional, calm, phlegmatic
+taciturn: quiet, reserved, silent, uncommunicative
+tumultuous: chaotic, turbulent, stormy, wild
+vignette: scene, sketch, snapshot, episode
+abstinence: restraint, self-denial, avoidance, sobriety
+acerbic: sharp, biting, harsh, sarcastic
+aggrandize: inflate, exaggerate, magnify, glorify
+apex: peak, top, summit, pinnacle
+austere: severe, plain, strict, stark
+bucolic: rural, pastoral, rustic, country
+coerce: force, pressure, compel, bully
+depraved: wicked, corrupt, evil, immoral
+dowdy: frumpy, drab, unfashionable, plain
+encomium: praise, tribute, eulogy, panegyric
+excommunicate: expel, banish, exclude, cast out
+flippant: glib, offhand, disrespectful, cheeky
+guileless: innocent, naive, honest, artless
+illiterate: unlettered, uneducated, unable to read
+incoherent: unclear, confused, jumbled, garbled
+insipid: bland, dull, flavorless, boring
+juxtapose: compare, place side by side, contrast
+mawkish: sentimental, mushy, sappy, maudlin
+moniker: name, nickname, alias, handle
+obtuse: dense, slow, dim, thick
+pathetic: pitiful, sad, feeble, pitiable
+platitude: cliche, truism, banality
+profuse: abundant, plentiful, copious, lavish
+quip: joke, jest, wisecrack, one-liner
+resilient: tough, strong, bounce back, hardy
+scrutinize: examine, inspect, study, analyze
+strenuous: hard, tough, exhausting, arduous
+tantamount: equivalent, equal, the same as, amounting to
+turbulence: unrest, chaos, disorder, upheaval
+vilify: defame, smear, malign, slander
+abstruse: obscure, complex, hard to understand, difficult
+aggregate: total, sum, whole, collection
+aphorism: saying, maxim, proverb, adage
+autonomous: independent, self-governing, self-ruling, free
+burgeon: grow, flourish, expand, boom
+collaborate: cooperate, work together, team up, partner
+courageous: brave, bold, fearless, valiant
+deprecate: disapprove, criticize, belittle, condemn
+dramatize: exaggerate, overstate, play up, act out
+endeavor: attempt, effort, try, undertaking
+executor: administrator, agent, trustee
+florid: flowery, ornate, elaborate, ruddy
+guise: disguise, appearance, pretense, cover
+illumine: light, illuminate, brighten, enlighten
+incompetent: inept, unskilled, useless, incapable
+insolence: rudeness, disrespect, impudence, cheek
+knack: talent, skill, gift, flair
+macabre: gruesome, grisly, morbid, ghastly
+moratorium: suspension, halt, freeze, ban
+obviate: prevent, avoid, remove, eliminate
+pathos: sadness, pity, sorrow, emotion
+plebeian: common, ordinary, lowly, working class
+progenitor: ancestor, forefather, originator, founder
+raconteur: storyteller, narrator, anecdotist
+resolved: determined, decided, firm, set
+secede: withdraw, break away, leave, separate
+strident: harsh, loud, shrill, grating
+taper: narrow, thin, lessen, dwindle
+turmoil: chaos, confusion, upheaval, disorder
+virtuoso: master, expert, genius, prodigy
+abundant: plentiful, ample, copious, rich
+agile: nimble, quick, spry, lithe
+aplomb: poise, composure, confidence, assurance
+avarice: greed, covetousness, materialism
+bygone: past, former, olden, departed
+collate: arrange, order, sort, assemble
+covert: secret, hidden, undercover, clandestine
+derelict: abandoned, neglected, run-down, dilapidated
+drivel: nonsense, rubbish, garbage, twaddle
+endow: provide, give, grant, bestow
+exodus: departure, exit, flight, mass leaving
+flounder: struggle, stumble, falter, thrash
+gullible: naive, trusting, credulous, easily fooled
+imbecile: idiot, fool, dunce, moron
+incongruous: out of place, mismatched, inconsistent, odd
+insolvent: bankrupt, broke, ruined, penniless
+labyrinth: maze, tangle, web, network
+magnanimous: generous, noble, forgiving, big-hearted
+morose: gloomy, sullen, glum, moody
+occlude: block, obstruct, close, plug
+patronize: condescend, talk down to, look down on, frequent
+plethora: excess, abundance, glut, surplus
+progeny: offspring, children, descendants, young
+radiate: emit, spread, shine, give off
+respite: break, rest, pause, relief
+sedate: calm, quiet, unhurried, tranquil
+stymie: hinder, block, thwart, obstruct
+tedious: boring, dull, tiresome, monotonous
+turpitude: wickedness, depravity, immorality, corruption
+virtuous: moral, good, righteous, honorable
+abysmal: terrible, awful, dreadful, appalling
+ailment: illness, sickness, complaint, disorder
+apogee: peak, climax, high point, zenith
+averse: opposed, reluctant, unwilling, disinclined
+cacophony: din, racket, noise, discord
+colloquial: informal, conversational, casual, everyday
+craven: cowardly, spineless, gutless, timid
+deride: mock, ridicule, scoff, jeer
+droll: amusing, witty, funny, comical
+enervate: weaken, exhaust, drain, sap
+exonerate: clear, acquit, absolve, vindicate
+flout: defy, disobey, ignore, scorn
+gumption: initiative, courage, spunk, grit
+imbibe: drink, absorb, take in, swallow
+inconsequential: unimportant, trivial, insignificant, minor
+instill: implant, introduce, teach, infuse
+lackadaisical: careless, lazy, halfhearted, listless
+maladroit: clumsy, awkward, inept, bungling
+mortify: embarrass, humiliate, shame
+odious: hateful, disgusting, repulsive, vile
+peccadillo: minor fault, slip, lapse, indiscretion
+pliable: flexible, bendable, supple, adaptable
+prohibit: forbid, ban, bar, outlaw
+ramble: wander, roam, babble, drift
+reticent: reserved, quiet, withdrawn, tight-lipped
+sedentary: inactive, sitting, desk-bound, still
+subdue: control, overcome, suppress, tame
+temerity: audacity, nerve, boldness, gall
+tyrannical: oppressive, dictatorial, cruel, domineering
+virulent: poisonous, deadly, hostile, venomous
+abyss: chasm, pit, gulf, void
+alienate: estrange, isolate, distance, turn away
+apologist: defender, supporter, advocate, champion
+avert: prevent, avoid, turn away, ward off
+cadge: beg, scrounge, mooch, bum
+combative: aggressive, pugnacious, belligerent, argumentative
+credulous: gullible, naive, trusting, unsuspecting
+derive: obtain, get, draw, take
+dubious: doubtful, questionable, suspicious, uncertain
+engender: cause, produce, generate, create
+exorbitant: excessive, outrageous, steep, extortionate
+foregone: inevitable, certain, predetermined, settled
+hackneyed: trite, overused, cliched, stale
+immaterial: irrelevant, unimportant, insignificant, beside the point
+inconspicuous: unnoticeable, unobtrusive, hidden, subtle
+insurgency: revolt, rebellion, uprising, insurrection
+lackluster: dull, boring, lifeless, uninspired
+malady: illness, disease, sickness, ailment
+mousy: timid, shy, quiet, drab
+officious: bossy, meddlesome, interfering, pushy
+pedantic: nitpicking, fussy, overly precise, hairsplitting
+plucky: brave, spirited, gutsy, courageous
+proletariat: working class, workers, laborers
+rambunctious: boisterous, unruly, rowdy, wild
+retribution: punishment, revenge, payback, vengeance
+sedition: rebellion, treason, incitement, subversion
+subjugate: conquer, dominate, subdue, enslave
+tenable: defensible, justifiable, reasonable, sound
+tyro: beginner, novice, newcomer, rookie
+viscous: thick, sticky, gooey, syrupy
+accede: agree, consent, yield, comply
+allay: relieve, ease, reduce, calm
+appalling: shocking, horrifying, dreadful, awful
+avid: eager, keen, enthusiastic, passionate
+cagey: guarded, secretive, evasive, wary
+compendium: collection, summary, anthology, digest
+crestfallen: disappointed, dejected, downcast, sad
+desecrate: defile, violate, profane, vandalize
+duress: pressure, force, coercion, threat
+engross: absorb, occupy, captivate, immerse
+exorcise: expel, drive out, banish, cast out
+formulate: devise, create, develop, draw up
+hamper: hinder, obstruct, impede, slow
+immigrate: move in, settle, relocate, arrive
+incontrovertible: undeniable, indisputable, unquestionable, certain
+intact: whole, unbroken, undamaged, complete
+laconic: terse, brief, concise, short
+malevolent: evil, spiteful, malicious, hostile
+muddle: confuse, mix up, jumble, mess up
+ominous: threatening, menacing, sinister, foreboding
+penitent: sorry, remorseful, repentant, contrite
+plutocrat: tycoon, magnate, rich ruler
+proliferate: multiply, spread, increase, grow
+rancor: bitterness, resentment, hostility, spite
+revamp: renovate, redo, overhaul, refurbish
+seedy: shabby, sleazy, run-down, squalid
+submissive: obedient, meek, compliant, passive
+tenacious: persistent, stubborn, determined, dogged
+ubiquitous: everywhere, omnipresent, universal, widespread
+visionary: dreamer, idealist, prophet, futurist
+accentuate: emphasize, highlight, stress, underline
+allege: claim, assert, charge, contend
+apparition: ghost, phantom, specter, spirit
+axiom: truth, principle, maxim, rule
+calamity: disaster, catastrophe, tragedy, misfortune
+compile: collect, gather, assemble, put together
+crucible: test, trial, ordeal, challenge
+desiccate: dry, dehydrate, parch, dry out
+ebb: recede, decline, fade, wane
+engulf: swallow, envelop, overwhelm, swamp
+expedient: convenient, practical, useful, advantageous
+forswear: renounce, give up, abandon, swear off
+haphazard: random, disorganized, careless, chaotic
+imminent: impending, approaching, near, looming
+incorrigible: hopeless, incurable, unreformable, chronic
+integrate: combine, unite, merge, blend
+languid: sluggish, slow, lazy, relaxed
+maleficent: evil, harmful, wicked, malicious
+malformed: misshapen, deformed, distorted, warped
+multiplicity: variety, abundance, many, multitude
+omnipotent: all-powerful, almighty, supreme
+poise: composure, grace, calm, balance
+prompt: quick, punctual, immediate, on time
+rapacious: greedy, grasping, predatory, ravenous
+revere: respect, honor, worship, admire
+self-effacing: modest, humble, unassuming, retiring
+subordinate: lower, junior, inferior, secondary
+tentative: hesitant, uncertain, provisional, cautious
+umbrage: offense, resentment, annoyance, displeasure
+vivacious: lively, animated, bubbly, spirited
+acclaim: praise, applause, approval, recognition
+allegorical: symbolic, figurative, metaphorical
+appease: pacify, placate, satisfy, calm
+banal: boring, trite, dull, commonplace
+callous: heartless, insensitive, cold, unfeeling
+complacent: smug, self-satisfied, contented, unconcerned
+crux: heart, core, key point, essence
+despondent: hopeless, depressed, dejected, downhearted
+ebullient: cheerful, exuberant, bubbly, enthusiastic
+enigma: mystery, puzzle, riddle, conundrum
+expenditure: spending, outlay, cost, expense
+fortitude: courage, bravery, strength, endurance
+harangue: rant, tirade, lecture, diatribe
+immortalize: memorialize, commemorate, preserve, enshrine
+incriminate: implicate, accuse, blame, involve
+integrity: honesty, honor, morality, principle
+languish: weaken, decline, waste away, suffer
+malicious: spiteful, mean, hateful, vicious
+mundane: ordinary, dull, everyday, routine
+omnipresent: everywhere, ubiquitous, universal, pervasive
+pensive: thoughtful, reflective, contemplative, wistful
+polarize: divide, split, separate
+propensity: tendency, inclination, leaning, habit
+rapturous: joyful, ecstatic, delighted, thrilled
+revulsion: disgust, repulsion, loathing, horror
+sequester: isolate, separate, seclude, set apart
+subsequent: later, following, next, ensuing
+tenuous: weak, slight, flimsy, shaky
+unanimous: agreed, united, undivided, in agreement
+vivify: enliven, animate, energize, revive
+acclimate: adjust, adapt, get used to, accustom
+alleviate: ease, relieve, reduce, lessen
+amenable: agreeable, open, willing, cooperative
+baneful: harmful, destructive, ruinous, deadly
+cajole: coax, persuade, wheedle, sweet-talk
+camaraderie: friendship, fellowship, comradeship, togetherness
+compliant: obedient, agreeable, cooperative, yielding
+detract: take away, diminish, reduce, lessen
+eccentric: odd, quirky, unconventional, strange
+enlighten: inform, educate, teach, illuminate
+explicate: explain, clarify, interpret, spell out
+fortuitous: lucky, chance, accidental, fortunate
+hardy: tough, strong, robust, sturdy
+immutable: unchangeable, fixed, permanent, constant
+incumbent: current, sitting, in office, obligatory
+interment: burial, entombment, funeral
+languor: laziness, lethargy, sluggishness, weariness
+malign: slander, defame, smear, badmouth
+munificent: generous, lavish, bountiful, liberal
+omniscient: all-knowing, all-seeing, wise
+penultimate: second to last, next to last
+pompous: arrogant, self-important, pretentious, puffed up
+propitiate: appease, placate, pacify, win over
+rarefy: thin, refine, purify
+rhetoric: oratory, persuasion, eloquence, speech
+serendipitous: lucky, fortunate, chance, accidental
+subservient: submissive, obedient, servile, docile
+tepid: lukewarm, unenthusiastic, halfhearted, cool
+unctuous: oily, smarmy, slick, flattering
+volatile: unstable, explosive, unpredictable, changeable
+abhor: hate, detest, loathe, despise
+acquiesce: agree, consent, comply, give in
+adroit: skillful, clever, deft, nimble
+ambivalent: torn, uncertain, undecided, mixed
+anomaly: oddity, exception, irregularity, deviation
+arduous: hard, difficult, exhausting, grueling
+benevolent: kind, generous, caring, charitable
+candor: honesty, frankness, openness, directness
+capricious: unpredictable, fickle, changeable, whimsical
+censure: condemn, criticize, rebuke, denounce
+cogent: convincing, compelling, persuasive, logical
+conciliatory: peacemaking, appeasing, soothing, pacifying
+debilitate: weaken, disable, cripple, sap
+deference: respect, submission, courtesy, regard
+diligent: hardworking, careful, thorough, industrious
+disparage: belittle, criticize, put down, run down
+eloquent: articulate, fluent, expressive, persuasive
+ephemeral: fleeting, brief, short-lived, momentary
+fastidious: fussy, meticulous, picky, particular
+frugal: thrifty, economical, sparing, careful
+garrulous: talkative, chatty, loquacious, wordy
+impetuous: impulsive, rash, hasty, reckless
+indifferent: uninterested, unconcerned, apathetic, detached
+meticulous: careful, thorough, precise, painstaking
+novice: beginner, newcomer, rookie, learner
+pragmatic: practical, realistic, sensible, down-to-earth
+`;
+const SYN = SYN_TEXT.trim().split("\n").reduce((m, l) => { const i = l.indexOf(":"); if (i > 0) m[l.slice(0, i).trim().toLowerCase()] = l.slice(i + 1).split(",").map(x => x.trim().toLowerCase()).filter(Boolean); return m; }, {});
+
+/* ---- forgiving spelling match ----
+   normalize: lowercase, trim, collapse spaces, drop trailing punctuation, strip one ending (-ness, -ion, -ing, -ly, -ed, -es, -s)
+   accept: same after normalizing, OR within 1 edit (2 edits when the target is 8+ letters); an adjacent swap counts as 1 edit */
+function cleanWord(t) { return String(t || "").toLowerCase().trim().replace(/\s+/g, " ").replace(/[.,!?;:'"]+$/, ""); }
+function stripEnding(t) { for (const suf of ["ness", "ion", "ing", "ly", "ed", "es", "s"]) if (t.length > suf.length + 2 && t.endsWith(suf)) return t.slice(0, -suf.length); return t; }
+function normWord(t) { return stripEnding(cleanWord(t)); }
+function editDistance(a, b) { // Damerau-Levenshtein, transposition costs 1
+  const d = []; for (let i = 0; i <= a.length; i++) { d[i] = [i]; } for (let j = 0; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    const c = a[i - 1] === b[j - 1] ? 0 : 1;
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+  }
+  return d[a.length][b.length];
+}
+// Try the answer and target both with and without an ending stripped, so a typo that happens to look like an ending still counts.
+function closeEnough(answer, target) {
+  const a0 = cleanWord(answer), t0 = cleanWord(target); if (!a0) return false;
+  const forms = [[a0, t0], [stripEnding(a0), stripEnding(t0)], [stripEnding(a0), t0], [a0, stripEnding(t0)]];
+  return forms.some(([a, t]) => a === t || editDistance(a, t) <= (t.length >= 8 ? 2 : 1));
+}
+// Returns { ok, exact, via } — via is the word or synonym it matched. Guard: an answer that IS another deck word is always wrong.
+function judgeShot(answer, word) {
+  const a = normWord(answer); if (!a) return { ok: false, blank: true };
+  const other = DECKS.vocab.items.find(w => w.w !== word && normWord(w.w) === a); if (other) return { ok: false, other: other.w };
+  const targets = [word].concat(SYN[word] || []);
+  for (const t of targets) if (closeEnough(answer, t)) return { ok: true, exact: normWord(answer) === normWord(t) && answer.trim().toLowerCase() === t, via: t };
+  return { ok: false };
+}
+function shootPool() { const cards = data.vocab || {}; return DECKS.vocab.items.filter(w => mastered(cards[w.w])); }
+function shootUnlocked() { return deckStats("vocab").groupsDone >= 1; }
+function shootStats() { return data.shoot || (data.shoot = {}); }
+
 // Parses "# Group" headers and "front|hint|back|extra" lines. Duplicates (by front) are skipped.
 function parseDeck(text, lower) {
   return text.trim().split("\n").reduce((acc, l) => { l = l.trim(); if (!l) return acc; if (l[0] === "#") { acc.g = l.slice(1).trim(); return acc; }
@@ -1259,6 +2373,43 @@ function nextCard() {
 }
 
 /* ============================================================
+   6c. SENTENCES — a multiple-choice quiz on the same 10-minute clock.
+   Bank items come from real practice tests; vocab items are built from the example sentence of any word he has started.
+   data.sent[id] = { seen, right, wrong, lastWrong }
+   ============================================================ */
+function sstate() { return data.sent || (data.sent = {}); }
+// Turn a started vocab word's example sentence into a question: blank the word, offer three other words of the same kind.
+function vocabSentences() {
+  const cards = data.vocab || {}, items = DECKS.vocab.items, out = [];
+  items.forEach((w, i) => {
+    if (!cards[w.w] || !w.ex) return;
+    const re = new RegExp("\\b" + w.w.replace(/e$/, "") + "\\w*\\b", "i"); if (!re.test(w.ex)) return;
+    const q = w.ex.replace(re, "______");
+    const pool = items.filter(x => x.pos === w.pos && x.w !== w.w); if (pool.length < 3) return;
+    let seed = i * 7919 + w.w.length; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    const picks = []; while (picks.length < 3) { const c = pool[Math.floor(rnd() * pool.length)]; if (!picks.includes(c)) picks.push(c); }
+    const opts = picks.map(x => x.w), at = Math.floor(rnd() * 4); opts.splice(at, 0, w.w);
+    out.push({ id: "v:" + w.w, g: "From your vocab", q, opts, ans: at, why: w.w + " means " + w.def + "." });
+  });
+  return out;
+}
+function sentItems() { return SENT.concat(vocabSentences()); }
+function sentStats() { const st = sstate(), all = sentItems(); let seen = 0, right = 0, wrong = 0, trouble = 0;
+  all.forEach(it => { const r = st[it.id]; if (!r) return; seen++; right += r.right || 0; wrong += r.wrong || 0; if ((r.wrong || 0) >= 1 && (r.lastWrong || false)) trouble++; });
+  return { total: all.length, bank: SENT.length, vocab: all.length - SENT.length, seen, right, wrong, trouble }; }
+// Order: anything he got wrong last time, then unseen, then everything else (least seen first).
+function nextSentence(seenThisSession) {
+  const st = sstate(), all = sentItems().filter(it => !seenThisSession.has(it.id));
+  const pool = all.length ? all : sentItems();
+  const missed = pool.filter(it => st[it.id] && st[it.id].lastWrong);
+  if (missed.length) return missed[0];
+  const fresh = pool.filter(it => !st[it.id]);
+  if (fresh.length) return fresh[Math.floor(Math.random() * Math.min(fresh.length, 8))];
+  return pool.slice().sort((a, b) => (st[a.id].seen || 0) - (st[b.id].seen || 0))[0];
+}
+function markSentence(id, ok) { const st = sstate(), r = st[id] || (st[id] = { seen: 0, right: 0, wrong: 0 }); r.seen++; if (ok) r.right++; else r.wrong++; r.lastWrong = !ok; }
+
+/* ============================================================
    7. TROPHIES
    ============================================================ */
 // Trophies are grouped into cabinets, each with a tier: 1 = easy, 2 = medium, 3 = hard.
@@ -1378,8 +2529,6 @@ function render() {
   $("lvlTitle").textContent = "Level " + s.level + " · " + s.title;
   $("xpBar").style.width = s.pct + "%";
   $("lvlDetail").innerHTML = row("Total XP", s.xp) + (s.next ? row("Next level", s.next.title) + row("XP still needed", s.next.xp - s.xp) : row("Next level", "None — top of the table")) + row("Full days this season", s.fullDays) + row("Best run of full days", s.best);
-  $("essayCard").classList.toggle("hidden", !isWeekend(d));
-  if (isWeekend(d)) $("essayPrompt").textContent = ESSAYS[dayNum(d) % ESSAYS.length];
 
   $("mHome").textContent = data.name || "Player";
   $("mScore").textContent = cur.us + " – " + cur.them;
@@ -1413,6 +2562,9 @@ function render() {
   const prt = dayProgress(t);
   $("coachToday").innerHTML = row("Sessions done today", prt.done + " of " + prt.total) + row("Form", band.name) +
     row("Level", s.level + " · " + s.title) + row("Days to test", daysLeft === null ? "not set" : daysLeft) + row("Current run of full days", s.run);
+  const ss = sentStats();
+  $("skTrouble").textContent = ss.trouble; $("skNew").textContent = ss.total - ss.seen; $("skAcc").textContent = ss.right + ss.wrong ? Math.round(100 * ss.right / (ss.right + ss.wrong)) + "%" : "–"; $("skVocab").textContent = ss.vocab;
+  $("sentSub").textContent = ss.bank + " from practice tests · " + ss.vocab + " built from words he's started";
   const dk = deck();
   $("dkDue").textContent = dk.due.length; $("dkLearn").textContent = dk.learn.length; $("dkNew").textContent = dk.newLeft; $("dkKnown").textContent = dk.master.length;
   $("vBlurb").textContent = "When the clock runs out, one of the day's four 10-minute reviews is checked off on Match day.";
@@ -1432,6 +2584,9 @@ function render() {
   $("groups").innerHTML = sec("In progress", info.filter(x => x.state === "active"), null) + sec("Mastered", info.filter(x => x.state === "done"), "done") + sec("Not started", info.filter(x => x.state === "todo"), "todo") || '<p style="margin:0">No groups yet.</p>';
   document.querySelectorAll("#groups [data-sec]").forEach(b => b.onclick = () => { vocabOpen[b.dataset.sec] = !vocabOpen[b.dataset.sec]; render(); });
   document.querySelectorAll(".grp").forEach(el => el.onclick = () => popGroup(el.dataset.g));
+  const canShoot = D.id === "vocab" && shootUnlocked(), soS = shootStats();
+  $("shootCard").classList.toggle("hidden", !canShoot);
+  if (canShoot) { const tot = Object.values(soS).reduce((a, r) => ({ s: a.s + (r.shots || 0), g: a.g + (r.goals || 0) }), { s: 0, g: 0 }); $("soStats").textContent = shootPool().length + " mastered words on the squad" + (tot.s ? " · " + tot.g + " goals from " + tot.s + " shots" : ""); }
   const twl = troubleWords();
   $("vTrouble").textContent = "Trouble " + D.unit + " only" + (twl.length ? " · " + twl.length : ""); $("vTrouble").disabled = !twl.length; $("vTrouble").style.opacity = twl.length ? "1" : ".5";
   $("troubleNote").textContent = twl.length ? "Trouble " + D.unit + " are ones he's missed twice or more. Getting them right here doesn't move their schedule; missing them does." : "No trouble " + D.unit + " yet — they appear once one has been missed twice.";
@@ -1551,9 +2706,11 @@ function popForm() {
 $("formCell").onclick = popForm;
 $("pop").onclick = e => { if (e.target === $("pop")) closePop(); };
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("pop").classList.contains("show")) closePop(); });
-const VIEWS = ["viewToday", "viewVocab", "viewSeason", "viewTrophies", "viewCoach"];
+const VIEWS = ["viewToday", "viewVocab", "viewSent", "viewSeason", "viewTrophies", "viewCoach"];
 function show(view, deckId) {
   if (vs && (view !== "viewVocab" || (deckId && deckId !== D.id))) vStop(false);
+  if (ss && view !== "viewSent") sStop(false);
+  if (so && (view !== "viewVocab" || (deckId && deckId !== "vocab"))) soStop();
   if (deckId) D = DECKS[deckId];
   VIEWS.forEach(v => $(v).classList.toggle("hidden", v !== view));
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.view === view && (!b.dataset.deck || b.dataset.deck === D.id)));
@@ -1568,6 +2725,7 @@ lc.onclick = toggleLvl; lc.onkeydown = e => { if (e.key === "Enter" || e.key ===
 $("saveBtn").onclick = async () => { data.name = $("nameIn").value.trim(); data.testDate = $("dateIn").value; data.newPerDay = Math.max(5, Math.min(100, Number($("newIn").value) || VOCAB.newPerDay)); await save(); render(); setSync("Settings saved."); };
 $("pvGoal").onclick = () => { show("viewToday"); const p = $("pitch"), pl = $("player"), b = $("ball"); pl.style.transform = "translate(296px,0)"; b.style.transform = "translate(306px,0)"; $("goalTxt").textContent = "GOAL! +120 XP"; setTimeout(shoot, 600); };
 $("pvFull").onclick = () => { const s = season(); popFullTime(today(), Object.assign({}, s, { run: Math.max(1, s.run), days: s.days.map(x => x.date === today() ? Object.assign({}, x, { done: x.total, xp: x.xp || 120 }) : x) })); };
+$("pvShoot").onclick = () => { show("viewVocab", "vocab"); soStart(true); };
 $("pvLevel").onclick = () => { const L = LEVELS[1]; popLevelUp({ level: 2, title: L.title, xp: L.xp + 12, next: LEVELS[2] }); };
 $("resetBtn").onclick = async () => {
   if (!confirm("Wipe every logged session and start the season over? This can't be undone.")) return;
@@ -1576,6 +2734,7 @@ $("resetBtn").onclick = async () => {
 /* ---- vocab session: a 10-minute clock; when it runs out, one vocab review is ticked on Match day ---- */
 let vs = null; // { endAt, seen, right, card, shown, timer }
 function vStart(mode) {
+  if (so) soStop();
   vs = { mode: mode || "normal", endAt: Date.now() + VOCAB.sessionMin * MIN, seen: 0, right: 0, card: null, shown: false, seenSet: new Set(), batchNoted: false };
   $("vocabHome").classList.add("hidden"); $("vocabSession").classList.remove("hidden");
   vs.timer = setInterval(vTick, 250); vNext(); vTick();
@@ -1622,6 +2781,115 @@ $("vInfo").onclick = () => openPop("forminfo",
 $("vStart").onclick = () => vStart("normal"); $("vTrouble").onclick = () => { if (troubleWords().length) vStart("trouble"); }; $("vQuit").onclick = () => vStop(false);
 document.addEventListener("keydown", e => { if (!vs) return; if (e.key === " " && !vs.shown && $("vShow")) { e.preventDefault(); vShow(); } if (vs.shown && /^[1-3]$/.test(e.key)) { const b = document.querySelector('#flash .grades button[data-g="' + (Number(e.key) - 1) + '"]'); if (b) b.click(); } });
 
+/* ---- Shootout: definition → type the word. Five shots a round. Outcomes: goal, saved, miss. (Room left for "assist" in phase 2.) ---- */
+let so = null;
+const SO_PTS = { goal: 1, assist: 0.5, saved: 0, miss: 0 };
+function soPitchSVG() { return '<svg viewBox="0 0 340 200" aria-hidden="true">' +
+  '<rect width="340" height="200" rx="16" fill="#52B495"/>' +
+  '<g fill="none" stroke="#FFFFFF" stroke-width="2.5" opacity=".95"><rect x="10" y="10" width="320" height="180" rx="4"/><rect x="60" y="10" width="220" height="80"/><rect x="115" y="10" width="110" height="34"/><circle cx="170" cy="118" r="3" fill="#FFFFFF"/><path d="M118 90 a52 52 0 0 0 104 0"/></g>' +
+  '<g id="soGoal"><rect x="120" y="4" width="100" height="8" fill="#FFFFFF"/><g stroke="#B4BEC0" stroke-width="1"><line x1="130" y1="4" x2="130" y2="12"/><line x1="150" y1="4" x2="150" y2="12"/><line x1="170" y1="4" x2="170" y2="12"/><line x1="190" y1="4" x2="190" y2="12"/><line x1="210" y1="4" x2="210" y2="12"/></g></g>' +
+  '<g class="so-keeper" id="soKeeper"><circle cx="170" cy="20" r="7" fill="#F3B0A0"/><path d="M163 28h14l4 14h-5l-2-8h-8l-2 8h-5z" fill="#F3CA7A"/><path d="M155 30l8 3M185 30l-8 3" stroke="#F3CA7A" stroke-width="4" stroke-linecap="round"/></g>' +
+  '<g id="soPlayer"><circle cx="170" cy="140" r="7" fill="#F3B0A0"/><path d="M163 148h14l3 16h-4l-2-9h-8l-2 9h-4z" fill="#4081DB"/><path d="M166 164l-2 12h4l2-10zM174 164l2 12h-4l-2-10z" fill="#2C3436"/></g>' +
+  '<g class="so-ball" id="soBall"><circle cx="170" cy="124" r="5.5" fill="#FFFFFF" stroke="#2C3436" stroke-width="1.5"/><path d="M168 124l2-2 2 2-2 2z" fill="#2C3436"/></g>' +
+  '<text x="20" y="180" font-size="12" font-weight="700" fill="#FFFFFF" id="soScore"></text></svg>'; }
+function soStart(preview) {
+  const pool = preview ? DECKS.vocab.items.slice(0, 40) : shootPool(); if (pool.length < 1) return;
+  const st = shootStats(), ranked = pool.slice().sort((a, b) => ((st[a.w] || {}).last || 0) - ((st[b.w] || {}).last || 0) || Math.random() - .5);
+  so = { preview: !!preview, words: ranked.slice(0, 5), i: 0, results: [], answered: false };
+  if (so.words.length < 5) { while (so.words.length < 5 && pool.length) so.words.push(pool[Math.floor(Math.random() * pool.length)]); }
+  $("vocabHome").classList.add("hidden"); $("shootSession").classList.remove("hidden");
+  $("soPitch").innerHTML = soPitchSVG(); soShot();
+}
+function soStop() { so = null; $("shootSession").classList.add("hidden"); $("vocabHome").classList.remove("hidden"); render(); }
+function soDots() { $("soShots").innerHTML = so.words.map((w, k) => '<i class="' + (so.results[k] || "") + (k === so.i && !so.results[k] ? " now" : "") + '"></i>').join(""); }
+function soShot() {
+  const w = so.words[so.i]; so.answered = false; soDots();
+  $("soBall").style.transform = ""; $("soKeeper").style.transform = ""; $("soScore").textContent = "Shot " + (so.i + 1) + " of 5";
+  $("soFlash").innerHTML = '<div class="kind">Shot ' + (so.i + 1) + ' · ' + (so.preview ? "preview" : w.g) + '</div><p class="so-def">' + w.def + '</p><div class="so-pos">' + w.pos + '</div>' +
+    '<input class="so-in" id="soIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="type the word">' +
+    '<div class="btnrow" style="width:100%"><button class="btn" id="soGo" type="button" style="flex:1">Shoot</button><button class="btn quiet" id="soSkip" type="button">Skip</button></div>';
+  $("soGo").onclick = () => soJudge($("soIn").value); $("soSkip").onclick = () => soJudge("", true);
+  $("soIn").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); soJudge($("soIn").value); } };
+  setTimeout(() => { const el = $("soIn"); if (el) el.focus(); }, 60);
+}
+function soJudge(answer, skipped) {
+  if (so.answered) return; so.answered = true;
+  const w = so.words[so.i], j = skipped ? { ok: false, blank: true } : judgeShot(answer, w.w);
+  const outcome = j.ok ? "goal" : j.blank ? "miss" : "saved"; so.results[so.i] = outcome; soDots();
+  // animate: goal → ball into net past the keeper; saved → keeper dives onto it; miss → wide
+  const ball = $("soBall"), keeper = $("soKeeper");
+  if (outcome === "goal") { const side = Math.random() < .5 ? -32 : 32; ball.style.transform = "translate(" + side + "px,-112px)"; keeper.style.transform = "translate(" + (-side) + "px,0) rotate(" + (side > 0 ? -25 : 25) + "deg)"; }
+  else if (outcome === "saved") { ball.style.transform = "translate(0,-96px)"; keeper.style.transform = "translate(0,10px)"; }
+  else { ball.style.transform = "translate(70px,-130px)"; }
+  if (!so.preview) { const st = shootStats(), r = st[w.w] || (st[w.w] = { shots: 0, goals: 0 }); r.shots++; if (outcome === "goal") r.goals++; r.last = Date.now(); }
+  if (outcome === "goal") pop();
+  const title = outcome === "goal" ? "GOAL" : outcome === "saved" ? "Saved by the keeper" : "Miss";
+  const note = outcome === "goal" ? (j.exact ? (j.via === w.w ? "Spot on." : '"' + j.via + '" works too.') : (j.via === w.w ? "Close enough. The spelling is:" : '"' + j.via + '" counts. The word is:')) :
+    outcome === "saved" ? (j.other ? '"' + j.other + '" is a different word in the deck. This one is:' : "The word is:") : "The word is:";
+  $("soFlash").innerHTML = '<div class="so-result"><div class="t ' + outcome + '">' + title + '</div><p>' + note + '</p><div class="w">' + w.w + '</div><p>' + w.def + '</p></div>' +
+    '<button class="btn" id="soNext" type="button" style="width:100%;justify-content:center;margin-top:14px">' + (so.i < 4 ? "Next shot" : "Final whistle") + '</button>';
+  $("soNext").onclick = () => { so.i++; if (so.i < 5) soShot(); else soEnd(); };
+  $("soNext").focus();
+}
+function soEnd() {
+  const goals = so.results.filter(r => r === "goal").length, saved = so.results.filter(r => r === "saved").length, miss = so.results.filter(r => r === "miss").length;
+  if (!so.preview) save().catch(() => {});
+  openPop("fulltime", confetti(goals >= 3 ? 26 : 8) +
+    '<div class="kicker">Shootout</div><div class="title">' + goals + ' of 5 scored</div>' +
+    '<div class="so-shots" style="justify-content:center">' + so.results.map(r => '<i class="' + r + '"></i>').join("") + '</div>' +
+    '<div class="facts"><span>' + goals + ' goal' + (goals === 1 ? "" : "s") + '</span><span>' + saved + ' saved</span><span>' + miss + ' missed</span></div>' +
+    '<p>' + (goals === 5 ? "Perfect round." : goals >= 3 ? "Good shooting." : "The keeper had a busy night. They'll come round again.") + '</p>' +
+    '<button class="btn" type="button">Back to the pitch</button>');
+  popNext = soStop;
+}
+$("soStart").onclick = () => soStart(false); $("soQuit").onclick = soStop;
+$("soInfo").onclick = () => openPop("forminfo", '<div class="kicker">Shootout</div><div class="title">How it works</div>' +
+  '<p style="text-align:left">Flashcards show the word and ask for the meaning. Shootout flips it: the meaning comes up and you type the word. Only words you\'ve already mastered take the field.</p>' +
+  '<p style="text-align:left">Five shots a round. A goal is the word or a close synonym. Spelling is not graded: a letter off, a swapped pair, or a different ending still scores, and the correct spelling is shown after every shot. Typing a different deck word is a save for the keeper. Blank or skipped is a miss.</p>' +
+  '<button class="btn quiet" type="button">Close</button>');
+/* ---- sentence session ---- */
+let ss = null;
+function sStart() {
+  ss = { endAt: Date.now() + VOCAB.sessionMin * MIN, seen: 0, right: 0, item: null, done: new Set() };
+  $("sentHome").classList.add("hidden"); $("sentSession").classList.remove("hidden");
+  ss.timer = setInterval(sTick, 250); sNext(); sTick();
+}
+function sStop(count) {
+  clearInterval(ss.timer); const seen = ss.seen, right = ss.right; ss = null;
+  $("sentSession").classList.add("hidden"); $("sentHome").classList.remove("hidden");
+  if (count) { const t = today(), vt = planFor(t).find(x => x.id === "v"), already = Number((data.log[t] || {}).v || 0);
+    if (already < (vt.count || 1)) { change(vt, t, +1); toast("Review ticked off · " + right + " of " + seen + " right"); } else toast("Drill done · " + right + " of " + seen + " right"); }
+  save().catch(() => {});
+}
+function sTick() {
+  if (!ss) return;
+  const left = Math.max(0, ss.endAt - Date.now()), m = Math.floor(left / MIN), sec = Math.floor((left % MIN) / 1000);
+  $("sClock").textContent = m + ":" + String(sec).padStart(2, "0"); $("sClock").classList.toggle("low", left < MIN);
+  $("sCount").textContent = ss.seen + " answered · " + ss.right + " right";
+  if (left <= 0) sStop(true);
+}
+function fmtQ(q) { return q.replace(/\(i\)______/g, "<b>(i) ______</b>").replace(/\(ii\)______/g, "<b>(ii) ______</b>").replace(/______/g, "<b>______</b>"); }
+function sNext() {
+  const it = nextSentence(ss.done); ss.item = it; if (!it) { $("sflash").innerHTML = "<p>No sentences yet.</p>"; return; }
+  const st = sstate()[it.id], tag = st && st.lastWrong ? "Missed last time" : st ? "Seen before" : "New";
+  $("sflash").innerHTML = '<div class="kind ' + (st && st.lastWrong ? "due" : st ? "learn" : "new") + '">' + tag + ' · ' + it.g + '</div><p class="q">' + fmtQ(it.q) + '</p>' +
+    '<div class="choices">' + it.opts.map((o, i) => '<button class="choice" type="button" data-i="' + i + '"><span class="l">' + "ABCD"[i] + ')</span><span>' + o + '</span></button>').join("") + '</div>';
+  document.querySelectorAll("#sflash .choice").forEach(b => b.onclick = () => sAnswer(+b.dataset.i));
+}
+function sAnswer(i) {
+  const it = ss.item, ok = i === it.ans; ss.seen++; if (ok) ss.right++; ss.done.add(it.id); markSentence(it.id, ok); if (ok) pop();
+  document.querySelectorAll("#sflash .choice").forEach(b => { const k = +b.dataset.i; b.disabled = true; b.classList.add(k === it.ans ? "right" : k === i ? "wrong" : "dim"); });
+  const w = document.createElement("div"); w.className = "why"; w.innerHTML = "<b>" + (ok ? "Right." : "Not this time. The answer is " + "ABCD"[it.ans] + ") " + it.opts[it.ans] + ".") + "</b>" + it.why;
+  const btn = document.createElement("button"); btn.className = "btn"; btn.type = "button"; btn.textContent = "Next"; btn.onclick = () => { sNext(); window.scrollTo(0, 0); };
+  $("sflash").appendChild(w); $("sflash").appendChild(btn);
+  render(); if (ss.seen % 5 === 0) save().catch(() => {});
+}
+$("sStart").onclick = sStart; $("sQuit").onclick = () => sStop(false);
+$("sInfo").onclick = () => openPop("forminfo", '<div class="kicker">Sentences</div><div class="title">How the drill works</div>' +
+  '<p style="text-align:left">Each question is a sentence with a blank (or two). Pick the word that the sentence itself proves right. The clue is always in the sentence: a restatement after a colon, a contrast word like "instead" or "although", or a "so… that" cause.</p>' +
+  '<p style="text-align:left">After you answer, the card shows the right answer and the clue that gave it away. Questions you miss come back first next time.</p>' +
+  '<p style="text-align:left">Some questions are built from your own vocab words: the example sentence with the word blanked out, plus three other words of the same kind.</p>' +
+  '<button class="btn quiet" type="button">Close</button>');
 function familyLink() { return location.origin + location.pathname + "?code=" + encodeURIComponent(code); }
 function newCode() { const a = "abcdefghjkmnpqrstuvwxyz23456789"; let c = ""; for (let i = 0; i < 16; i++) c += a[Math.floor(Math.random() * a.length)]; return c.replace(/(.{4})(?=.)/g, "$1-"); }
 function cleanCode(v) { return v.trim().toLowerCase().replace(/[^a-z0-9-]/g, ""); }
