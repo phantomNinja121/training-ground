@@ -72,7 +72,7 @@
   .matchdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 12px; }
   .matchdays .md { text-align: center; font-size: 11px; color: var(--mid-gray); }
   .matchdays .md b { height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; margin-top: 4px; background: var(--bg); color: var(--dark-gray); font-weight: 700; }
-  .matchdays .md b.g { background: var(--green); color: var(--white); } .matchdays .md b.x { background: var(--red); color: var(--white); } .matchdays .md b.n { background: var(--yellow); color: var(--black); } .matchdays .md b.t { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--yellow); }
+  .matchdays .md b.g { background: var(--green); color: var(--white); } .matchdays .md b.x { background: var(--red); color: var(--white); } .matchdays .md b.t { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--yellow); }
   .results li { display: flex; justify-content: space-between; align-items: center; }
   .flames { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; padding: 4px 6px 8px; }
   .flames span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -120,6 +120,7 @@
   .card h3 .r { font-weight: 400; font-size: 13px; color: var(--mid-gray); }
   .meter { height: 10px; border-radius: 5px; background: var(--bg); overflow: hidden; }
   .meter > i { display: block; height: 100%; border-radius: 5px; background: var(--green); transition: width .5s ease, background .5s ease; }
+  #xpBar { background: var(--purple); }
   .card p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--dark-gray); }
 
   /* season */
@@ -221,6 +222,7 @@
   .pop .facts span { background: var(--bg); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; font-weight: 600; color: var(--black); }
   .pop p { margin: 0 0 6px; color: var(--dark-gray); font-size: 14.5px; line-height: 1.45; }
   .pop .btn { margin-top: 10px; width: 100%; justify-content: center; }
+  .pop p.l { text-align: left; }
   .pop.fulltime .title { color: var(--green); }
   /* level up: a golden burst behind the text, gold particles drifting upward */
   .pop.levelup .box { background: var(--white); }
@@ -385,7 +387,7 @@
     <div class="daynav"><button id="dayNavBtn" type="button">Forgot to log yesterday?</button></div>
     <div class="card lvl" id="levelCard" role="button" tabindex="0" aria-expanded="false">
       <h3><span id="lvlTitle">Level 1 · Trialist</span><span class="r">Details <span class="chev">&#9662;</span></span></h3>
-      <div class="meter"><i id="xpBar" style="width:0%;background:var(--purple)"></i></div>
+      <div class="meter"><i id="xpBar" style="width:0%"></i></div>
       <div id="lvlDetail" class="hidden"></div>
     </div>
     <div class="daynav"><button id="seasonLink" type="button">View the season &#9656;</button></div>
@@ -533,7 +535,7 @@
 /* ============================================================
    1. VERSION + CONFIG — the Firebase config is read from config.js (see SETUP.md), never pasted here.
    ============================================================ */
-const APP_VERSION = "2026-09-18.2";
+const APP_VERSION = "2026-09-18.3";
 const firebaseConfig = window.firebaseConfig || null;
 // The family code is the password: it's the Firestore record name, it's never written into this file, and it only travels in the link you share.
 const mem = {};
@@ -3387,7 +3389,7 @@ Object.values(DECKS).forEach(d => d.groups = d.items.map(w => w.g).filter((g, i,
 let D = DECKS.vocab;
 const MASTER_STREAK = 3; // "Got it" this many times in a row, on separate days, after graduating
 // Learning steps are short on purpose so a new word comes round at least twice inside one 10-minute session before it graduates to tomorrow.
-const VOCAB = { newPerDay: 20, learnSteps: [1, 4], gradIv: 1, easyIv: 4, relearnStep: 4, minEase: 1.3, maxIv: 365, sessionMin: 10 };
+const VOCAB = { newPerDay: 20, learnSteps: [1, 4], gradIv: 1, relearnStep: 4, minEase: 1.3, maxIv: 365, sessionMin: 10 };
 
 
 const LEVELS = [
@@ -3522,7 +3524,7 @@ function dayVerdict(d, t) {
 function matchFor(monday, t) {
   const start = data.started || t; let us = 0, them = 0, days = [];
   for (let i = 0; i < 7; i++) { const d = addDays(monday, i); let v = ""; if (d >= start && d <= t) v = dayVerdict(d, t); if (v === "g") us++; if (v === "x") them++; days.push({ date: d, v, future: d > t }); }
-  let extras = 0; for (let i = 0; i < 7; i++) extras += Number((data.log[addDays(monday, i)] || {}).x || 0);
+  const extras = extrasInWeek(monday);
   const bonus = extras >= BONUS_EXTRAS ? 1 : 0; us += bonus;
   const over = addDays(monday, 6) < t;
   return { monday, us, them, days, over, extras, bonus, result: !over ? "live" : us > them ? "win" : us < them ? "loss" : "draw" };
@@ -3560,7 +3562,6 @@ function preview(c, grade, now) {
   const steps = c.st === "relearn" ? [VOCAB.relearnStep] : VOCAB.learnSteps;
   if (c.st === "learn" || c.st === "relearn") {
     if (grade === 0) return { st: c.st, step: 0, iv: c.iv, ease: c.ease, due: now + steps[0] * MIN };
-    if (grade === 3) return { st: "review", step: 0, iv: c.st === "relearn" ? Math.max(1, c.iv) : VOCAB.easyIv, ease: c.ease, due: now + (c.st === "relearn" ? Math.max(1, c.iv) : VOCAB.easyIv) * DAY };
     const next = c.step + (grade === 1 ? 0 : 1);
     if (next < steps.length) return { st: c.st, step: next, iv: c.iv, ease: c.ease, due: now + steps[next] * MIN };
     const iv = c.st === "relearn" ? Math.max(1, c.iv) : VOCAB.gradIv;
@@ -3570,8 +3571,7 @@ function preview(c, grade, now) {
   if (grade === 0) return { st: "relearn", step: 0, iv: 1, ease: Math.max(VOCAB.minEase, c.ease - 0.2), due: now + VOCAB.relearnStep * MIN, lapse: true };
   let iv, ease = c.ease;
   if (grade === 1) { iv = Math.max(c.iv + 1, Math.round(c.iv * 1.2)); ease = Math.max(VOCAB.minEase, ease - 0.15); }
-  else if (grade === 2) iv = Math.max(c.iv + 1, Math.round(c.iv * ease));
-  else { iv = Math.max(c.iv + 1, Math.round(c.iv * ease * 1.3)); ease += 0.15; }
+  else iv = Math.max(c.iv + 1, Math.round(c.iv * ease));
   iv = Math.min(VOCAB.maxIv, fuzz(iv));
   return { st: "review", step: 0, iv, ease, due: now + iv * DAY };
 }
@@ -3596,7 +3596,7 @@ function deck() {
   D.items.forEach(w => { const c = cards[w.w]; if (!c) return; if (c.st === "review") { if (c.due <= now) due.push(w); else known.push(w); } else learn.push(w); });
   const fresh = D.items.filter(w => !cards[w.w]);
   const master = D.items.filter(w => mastered(cards[w.w]));
-  return { due, learn, fresh, known, master, newLeft: Math.max(0, perDay - introduced), introduced };
+  return { due, learn, fresh, known, master, newLeft: Math.max(0, perDay - introduced) };
 }
 // Next card: overdue reviews first, then learning cards whose step timer has passed, then new words (within today's quota), then waiting learning cards.
 function nextTrouble(seen) {
@@ -3790,8 +3790,8 @@ function render() {
   });
   if (dayProgress(d).full) wrap.innerHTML = '<div class="empty-play">Full time — every session scored<small>Keep it going tomorrow.</small></div>';
   $("doneTitle").classList.toggle("hidden", !dwrap.children.length);
-  const xw = extrasThisWeek(t), curM = matches().current;
-  $("extraNote").textContent = xw || curM.bonus ? (curM.bonus ? "Bonus shot scored this week." : "Extra sessions this week: " + xw + " of " + BONUS_EXTRAS + " toward a bonus shot.") : "";
+  const xw = cur.extras;
+  $("extraNote").textContent = xw || cur.bonus ? (cur.bonus ? "Bonus shot scored this week." : "Extra sessions this week: " + xw + " of " + BONUS_EXTRAS + " toward a bonus shot.") : "";
   $("sbMatch").textContent = cur.us + " – " + cur.them;
   $("sbMatchLbl").textContent = cur.us > cur.them ? "winning" : cur.us < cur.them ? "behind" : "this week";
   // pitch: the player advances one step per session; the last one is the shot
@@ -3811,7 +3811,7 @@ function render() {
   $("mHome").textContent = data.name || "Player";
   $("mScore").textContent = cur.us + " – " + cur.them;
   $("matchWhen").textContent = fmtShort(cur.monday) + " – " + fmtShort(addDays(cur.monday, 6));
-  $("matchDays").innerHTML = cur.days.map((x, i) => '<div class="md">' + DOW[i] + '<b class="' + x.v + (x.date === t ? " t" : "") + '">' + (x.v === "g" ? ICONS.ball : x.v === "x" ? "✕" : x.v === "n" ? "–" : "") + '</b></div>').join("");
+  $("matchDays").innerHTML = cur.days.map((x, i) => '<div class="md">' + DOW[i] + '<b class="' + x.v + (x.date === t ? " t" : "") + '">' + (x.v === "g" ? ICONS.ball : x.v === "x" ? "✕" : "") + '</b></div>').join("");
   $("mBonus").innerHTML = cur.bonus ? '<span class="result win">Bonus shot scored · +1</span>' : '<span class="result live">Bonus shot: ' + cur.extras + ' of ' + BONUS_EXTRAS + ' extra sessions</span>';
   $("mResult").innerHTML = cur.over ? '<span class="result ' + cur.result + '">' + (cur.result === "win" ? "Won the week" : cur.result === "loss" ? "Lost the week" : "Draw") + '</span>' : '<span class="result live">Match in progress · ' + (7 - cur.days.filter(x => !x.future).length) + ' day' + (7 - cur.days.filter(x => !x.future).length === 1 ? "" : "s") + ' left</span>';
   const past = M.list.filter(m => m.over).reverse();
@@ -3963,7 +3963,7 @@ function popGroup(g) {
   openPop("wordlist",
     '<div class="kicker">' + ws.length + ' words</div><div class="title">' + g + '</div>' +
     '<div class="wl">' + ws.map(w => '<div><i class="' + cls(w) + '"></i><div><b>' + w.w + '</b> <span>' + w.def + '</span></div>' + ((cards[w.w] || {}).lapses >= 2 ? '<small>missed ' + cards[w.w].lapses + '×</small>' : '') + '</div>').join("") + '</div>' +
-    (lsGet("tg_dev") === "on" ? '<button class="btn" id="practiceGroup" type="button" style="width:100%;justify-content:center;margin-top:12px">Practice this group</button>' : '') +
+    (lsGet("tg_dev") === "on" ? '<button class="btn" id="practiceGroup" type="button" style="width:100%;justify-content:center">Practice this group</button>' : '') +
     '<button class="btn quiet" type="button">Close</button>');
   const pb = $("practiceGroup"); if (pb) pb.onclick = () => { closePop(); vStart("group", g); };
 }
@@ -4027,7 +4027,8 @@ function vStart(mode, group) {
 }
 /* A finished 10-minute session: tick one of the day's four reviews; past four, bank an extra. Six extras in a week = one bonus shot (max one a week). */
 const BONUS_EXTRAS = 6;
-function extrasThisWeek(t) { const mon = mondayOf(t); let n = 0; for (let i = 0; i < 7; i++) n += Number((data.log[addDays(mon, i)] || {}).x || 0); return n; }
+function extrasInWeek(monday) { let n = 0; for (let i = 0; i < 7; i++) n += Number((data.log[addDays(monday, i)] || {}).x || 0); return n; }
+function extrasThisWeek(t) { return extrasInWeek(mondayOf(t)); }
 function sessionDone(label) {
   const t = today(), vt = planFor(t).find(x => x.id === "v"), already = Number((data.log[t] || {}).v || 0);
   if (already < (vt.count || 1)) { change(vt, t, +1); toast("Review ticked off · " + label); return; }
@@ -4067,10 +4068,10 @@ function vShow() {
 }
 $("vInfo").onclick = () => openPop("forminfo",
   '<div class="kicker">' + D.name + '</div><div class="title">How the 10 minutes work</div>' +
-  '<p style="text-align:left">Cards you\'re due to see come first, then new ones from the current group, in order. A new card comes back at least twice in the same session before it moves to tomorrow.</p>' +
-  '<p style="text-align:left">Each card has a memory. Get it right and it comes back later: 1 day, then 3, then a week. Miss it and it comes back in a few minutes. Be honest with the buttons; that\'s what makes the spacing work.</p>' +
-  '<p style="text-align:left">A card is <b>mastered</b> once it has graduated and then been "Got it" ' + MASTER_STREAK + ' more times in a row on separate days. Missing it starts that count over.</p>' +
-  '<p style="text-align:left">When the clock runs out, one of the day\'s four 10-minute reviews is ticked off on Match day. Vocab and math sessions both count. Stopping early doesn\'t.</p>' +
+  '<p class="l">Cards you\'re due to see come first, then new ones from the current group, in order. A new card comes back at least twice in the same session before it moves to tomorrow.</p>' +
+  '<p class="l">Each card has a memory. Get it right and it comes back later: 1 day, then 3, then a week. Miss it and it comes back in a few minutes. Be honest with the buttons; that\'s what makes the spacing work.</p>' +
+  '<p class="l">A card is <b>mastered</b> once it has graduated and then been "Got it" ' + MASTER_STREAK + ' more times in a row on separate days. Missing it starts that count over.</p>' +
+  '<p class="l">When the clock runs out, one of the day\'s four 10-minute reviews is ticked off on Match day. Vocab and math sessions both count. Stopping early doesn\'t.</p>' +
   '<button class="btn quiet" type="button">Close</button>');
 $("vStart").onclick = () => vStart("normal"); $("vTrouble").onclick = () => { if (troubleWords().length) vStart("trouble"); }; $("vQuit").onclick = () => vStop(false);
 document.addEventListener("keydown", e => { if (!vs) return; if (e.key === " " && !vs.shown && $("vShow")) { e.preventDefault(); vShow(); } if (vs.shown && /^[1-3]$/.test(e.key)) { const b = document.querySelector('#flash .grades button[data-g="' + (Number(e.key) - 1) + '"]'); if (b) b.click(); } });
@@ -4140,7 +4141,7 @@ function soJudge(answer, skipped) {
   const note = outcome === "goal" ? (j.exact ? (j.via === w.w ? "Spot on." : '"' + j.via + '" works too.') : (j.via === w.w ? "Close enough. The spelling is:" : '"' + j.via + '" counts. The word is:')) :
     outcome === "saved" ? (j.other ? '"' + j.other + '" is a different word in the deck. This one is:' : "The word is:") : "The word is:";
   $("soFlash").innerHTML = '<div class="so-result"><div class="t ' + outcome + '">' + title + '</div><p>' + note + '</p><div class="w">' + w.w + '</div><p>' + w.def + '</p></div>' +
-    '<button class="btn" id="soNext" type="button" style="width:100%;justify-content:center;margin-top:14px">' + (so.i < 4 ? "Next shot" : "Final whistle") + '</button>';
+    '<button class="btn" id="soNext" type="button" style="width:100%;justify-content:center">' + (so.i < 4 ? "Next shot" : "Final whistle") + '</button>';
   $("soNext").onclick = () => { so.i++; if (so.i < 5) soShot(); else { soRoundDone(); if (so.timed && !so.over) { toast("Round " + so.rounds + ": " + (so.results.filter(r => r === "goal").length >= 3 ? "point to " + (data.name || "Leo") : "point to the opposition")); so.words = soPickFive(so.pool, so.used); so.i = 0; so.results = []; soShot(); } else soFinish(); } };
   $("soNext").focus();
 }
@@ -4171,9 +4172,9 @@ function soFinish() {
 }
 $("soStart").onclick = () => soStart(false, false); $("soClock").onclick = () => soStart(false, true); $("soQuit").onclick = soStop;
 $("soInfo").onclick = () => openPop("forminfo", '<div class="kicker">Shootout</div><div class="title">How it works</div>' +
-  '<p style="text-align:left">Flashcards show the word and ask for the meaning. Shootout flips it: the meaning comes up and you type the word. Only words you\'ve already mastered take the field.</p>' +
-  '<p style="text-align:left">Start the clock for ten minutes of rounds: score 3 or more of 5 and the round\'s point goes to you, otherwise to the opposition, and the final score decides the shootout. Or take a single round of five.</p>' +
-  '<p style="text-align:left">A goal is the word or a close synonym. Spelling is not graded: a letter off, a swapped pair, or a different ending still scores, and the correct spelling is shown after every shot. Typing a different deck word is a save for the keeper. Blank or skipped is a miss.</p>' +
+  '<p class="l">Flashcards show the word and ask for the meaning. Shootout flips it: the meaning comes up and you type the word. Only words you\'ve already mastered take the field.</p>' +
+  '<p class="l">Start the clock for ten minutes of rounds: score 3 or more of 5 and the round\'s point goes to you, otherwise to the opposition, and the final score decides the shootout. Or take a single round of five.</p>' +
+  '<p class="l">A goal is the word or a close synonym. Spelling is not graded: a letter off, a swapped pair, or a different ending still scores, and the correct spelling is shown after every shot. Typing a different deck word is a save for the keeper. Blank or skipped is a miss.</p>' +
   '<button class="btn quiet" type="button">Close</button>');
 /* ---- sentence session ---- */
 let ss = null;
@@ -4213,9 +4214,9 @@ function sAnswer(i) {
 }
 $("sStart").onclick = sStart; $("sQuit").onclick = () => sStop(false);
 $("sInfo").onclick = () => openPop("forminfo", '<div class="kicker">Sentences</div><div class="title">How the drill works</div>' +
-  '<p style="text-align:left">Each question is a sentence with a blank (or two). Pick the word that the sentence itself proves right. The clue is always in the sentence: a restatement after a colon, a contrast word like "instead" or "although", or a "so… that" cause.</p>' +
-  '<p style="text-align:left">After you answer, the card shows the right answer and the clue that gave it away. Questions you miss come back first next time.</p>' +
-  '<p style="text-align:left">Some questions are built from your own vocab words: the example sentence with the word blanked out, plus three other words of the same kind.</p>' +
+  '<p class="l">Each question is a sentence with a blank (or two). Pick the word that the sentence itself proves right. The clue is always in the sentence: a restatement after a colon, a contrast word like "instead" or "although", or a "so… that" cause.</p>' +
+  '<p class="l">After you answer, the card shows the right answer and the clue that gave it away. Questions you miss come back first next time.</p>' +
+  '<p class="l">Some questions are built from your own vocab words: the example sentence with the word blanked out, plus three other words of the same kind.</p>' +
   '<button class="btn quiet" type="button">Close</button>');
 function familyLink() { return location.origin + location.pathname + "?code=" + encodeURIComponent(code); }
 function newCode() { const a = "abcdefghjkmnpqrstuvwxyz23456789"; let c = ""; for (let i = 0; i < 16; i++) c += a[Math.floor(Math.random() * a.length)]; return c.replace(/(.{4})(?=.)/g, "$1-"); }
