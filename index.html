@@ -400,9 +400,7 @@
       <div class="deck"><div class="due"><b id="dkDue">0</b><span>due</span></div><div class="learn"><b id="dkLearn">0</b><span>learning</span></div><div class="new"><b id="dkNew">0</b><span>new today</span></div><div><b id="dkKnown">0</b><span>mastered</span></div></div>
       <div class="card">
         <h3>10-minute review <button class="info" id="vInfo" type="button" aria-label="How it works">i</button></h3>
-        <p style="margin:0" id="vBlurb"></p>
         <div class="btnrow"><button class="btn" id="vStart" type="button">Start the clock</button><button class="btn quiet" id="vTrouble" type="button">Trouble words only</button></div>
-        <p class="status-line" id="troubleNote"></p>
       </div>
       <div class="card"><h3>Groups <span class="r">tap one for its list</span></h3><div id="groups"></div></div>
     </div>
@@ -419,9 +417,7 @@
       <div class="deck"><div class="due"><b id="soKgoals">0</b><span>goals</span></div><div class="learn"><b id="soKshots">0</b><span>shots</span></div><div class="new"><b id="soKwon">0</b><span>rounds won</span></div><div><b id="soKlost">0</b><span>rounds lost</span></div></div>
       <div class="card">
         <h3>10-minute shootout <button class="info" id="soInfo" type="button" aria-label="How it works">i</button></h3>
-        <p style="margin:0">Rounds of five shots until the clock runs out. Score 3 or more in a round and Leo gets a point; fewer and the opposition does. When the clock runs out, one of the day's four 10-minute reviews is checked off.</p>
         <div class="btnrow"><button class="btn" id="soClock" type="button">Start the clock</button><button class="btn quiet" id="soStart" type="button">Just five shots</button></div>
-        <p class="status-line" id="soStats"></p>
       </div>
     </div>
     <div id="shootSession" class="hidden">
@@ -439,7 +435,6 @@
       <div class="deck"><div class="due"><b id="skTrouble">0</b><span>to fix</span></div><div class="new"><b id="skNew">0</b><span>unseen</span></div><div class="learn"><b id="skAcc">–</b><span>accuracy</span></div><div><b id="skVocab">0</b><span>from vocab</span></div></div>
       <div class="card">
         <h3>10-minute sentence drill <button class="info" id="sInfo" type="button" aria-label="How it works">i</button></h3>
-        <p style="margin:0">Real ISEE-style sentence completions, A to D. Ones he got wrong come back first. When the clock runs out, one of the day's four 10-minute reviews is checked off.</p>
         <button class="btn" id="sStart" type="button">Start the clock</button>
       </div>
     </div>
@@ -535,7 +530,7 @@
 /* ============================================================
    1. VERSION + CONFIG — the Firebase config is read from config.js (see SETUP.md), never pasted here.
    ============================================================ */
-const APP_VERSION = "2026-09-18.3";
+const APP_VERSION = "2026-09-20.1";
 const firebaseConfig = window.firebaseConfig || null;
 // The family code is the password: it's the Firestore record name, it's never written into this file, and it only travels in the link you share.
 const mem = {};
@@ -3843,10 +3838,9 @@ function render() {
     row("Level", s.level + " · " + s.title) + row("Days to test", daysLeft === null ? "not set" : daysLeft) + row("Current run of full days", s.run);
   const ss = sentStats();
   $("skTrouble").textContent = ss.trouble; $("skNew").textContent = ss.total - ss.seen; $("skAcc").textContent = ss.right + ss.wrong ? Math.round(100 * ss.right / (ss.right + ss.wrong)) + "%" : "–"; $("skVocab").textContent = ss.vocab;
-  $("sentSub").textContent = ss.bank + " from practice tests · " + ss.vocab + " built from words he's started";
+  $("sentSub").textContent = "Real ISEE-style sentence completions.";
   const dk = deck();
   $("dkDue").textContent = dk.due.length; $("dkLearn").textContent = dk.learn.length; $("dkNew").textContent = dk.newLeft; $("dkKnown").textContent = dk.master.length;
-  $("vBlurb").textContent = "When the clock runs out, one of the day's four 10-minute reviews is checked off on Match day.";
   // Groups: only the ones in progress get tiles by default; finished and untouched groups fold into one line each.
   const cards = vcards(), nowG = dk.fresh.length ? dk.fresh[0].g : null;
   const info = D.groups.map(g => {
@@ -3865,14 +3859,11 @@ function render() {
   document.querySelectorAll(".grp").forEach(el => el.onclick = () => popGroup(el.dataset.g));
   const sq = shootSquad(), tot = shootTotals();
   $("soKgoals").textContent = tot.g; $("soKshots").textContent = tot.s; $("soKwon").textContent = tot.won; $("soKlost").textContent = tot.lost;
-  $("soSub").textContent = sq.kind === "mastered" ? "Shooting with your mastered words" : sq.kind === "graduated" ? "Shooting with words you've graduated · mastered words take over once you have five" : sq.kind === "started" ? "Shooting with words you've started · mastered words take over once you have five" : "Shooting with the first group · your own words take over once you've started five";
-  $("soStats").textContent = tot.won + tot.lost ? "Rounds: " + tot.won + " won, " + tot.lost + " lost" + (tot.perfect ? " · " + tot.perfect + " perfect" : "") + (tot.sessionsWon + tot.sessionsLost ? " · Shootouts: " + tot.sessionsWon + " won, " + tot.sessionsLost + " lost" : "") : "";
+  $("soSub").textContent = "You're given the definition. You spell the word.";
   const twl = troubleWords();
   $("vTrouble").textContent = "Trouble " + D.unit + " only" + (twl.length ? " · " + twl.length : ""); $("vTrouble").disabled = !twl.length; $("vTrouble").style.opacity = twl.length ? "1" : ".5";
-  $("troubleNote").textContent = twl.length ? "Trouble " + D.unit + " are ones he's missed twice or more. Getting them right here doesn't move their schedule; missing them does." : "No trouble " + D.unit + " yet — they appear once one has been missed twice.";
-  const nextG = dk.fresh.length ? dk.fresh[0].g : null;
   $("vocabTitle").textContent = D.name;
-  $("vocabSub").textContent = D.items.length + " " + D.unit + " · " + (dk.known.length + dk.learn.length + dk.due.length) + " started" + (nextG ? " · new " + D.unit + " come from " + nextG : " · every one started");
+  $("vocabSub").textContent = D.id === "vocab" ? "Learn the definitions of the most common ISEE words." : "Learn the math facts the ISEE expects you to know.";
   if (document.activeElement !== $("newIn")) $("newIn").value = data.newPerDay || "";
   if (document.activeElement !== $("nameIn")) $("nameIn").value = data.name || "";
   if (document.activeElement !== $("dateIn")) $("dateIn").value = data.testDate || "";
@@ -4071,6 +4062,7 @@ $("vInfo").onclick = () => openPop("forminfo",
   '<p class="l">Cards you\'re due to see come first, then new ones from the current group, in order. A new card comes back at least twice in the same session before it moves to tomorrow.</p>' +
   '<p class="l">Each card has a memory. Get it right and it comes back later: 1 day, then 3, then a week. Miss it and it comes back in a few minutes. Be honest with the buttons; that\'s what makes the spacing work.</p>' +
   '<p class="l">A card is <b>mastered</b> once it has graduated and then been "Got it" ' + MASTER_STREAK + ' more times in a row on separate days. Missing it starts that count over.</p>' +
+  '<p class="l">New ' + D.unit + ' arrive one group at a time, in order. "Trouble ' + D.unit + ' only" runs just the ones missed twice or more; getting one right there doesn\'t move its schedule, missing it does.</p>' +
   '<p class="l">When the clock runs out, one of the day\'s four 10-minute reviews is ticked off on Match day. Vocab and math sessions both count. Stopping early doesn\'t.</p>' +
   '<button class="btn quiet" type="button">Close</button>');
 $("vStart").onclick = () => vStart("normal"); $("vTrouble").onclick = () => { if (troubleWords().length) vStart("trouble"); }; $("vQuit").onclick = () => vStop(false);
@@ -4171,11 +4163,12 @@ function soFinish() {
   popNext = soStop;
 }
 $("soStart").onclick = () => soStart(false, false); $("soClock").onclick = () => soStart(false, true); $("soQuit").onclick = soStop;
-$("soInfo").onclick = () => openPop("forminfo", '<div class="kicker">Shootout</div><div class="title">How it works</div>' +
-  '<p class="l">Flashcards show the word and ask for the meaning. Shootout flips it: the meaning comes up and you type the word. Only words you\'ve already mastered take the field.</p>' +
-  '<p class="l">Start the clock for ten minutes of rounds: score 3 or more of 5 and the round\'s point goes to you, otherwise to the opposition, and the final score decides the shootout. Or take a single round of five.</p>' +
+$("soInfo").onclick = () => { const sq = shootSquad(); openPop("forminfo", '<div class="kicker">Shootout</div><div class="title">How it works</div>' +
+  '<p class="l">' + (sq.kind === "mastered" ? "The squad is your mastered words." : sq.kind === "graduated" ? "The squad is words you've graduated; mastered words take over once you have five." : sq.kind === "started" ? "The squad is words you've started; mastered words take over once you have five." : "The squad is the first group until you've started five words of your own.") + '</p>' +
+  '<p class="l">Flashcards show the word and ask for the meaning. Shootout flips it: the meaning comes up and you type the word.</p>' +
+  '<p class="l">Start the clock for ten minutes of rounds: score 3 or more of 5 and the round\'s point goes to you, otherwise to the opposition, and the final score decides the shootout. A finished shootout ticks one of the day\'s four 10-minute reviews. Or take a single round of five.</p>' +
   '<p class="l">A goal is the word or a close synonym. Spelling is not graded: a letter off, a swapped pair, or a different ending still scores, and the correct spelling is shown after every shot. Typing a different deck word is a save for the keeper. Blank or skipped is a miss.</p>' +
-  '<button class="btn quiet" type="button">Close</button>');
+  '<button class="btn quiet" type="button">Close</button>'); };
 /* ---- sentence session ---- */
 let ss = null;
 function sStart() {
@@ -4217,6 +4210,7 @@ $("sInfo").onclick = () => openPop("forminfo", '<div class="kicker">Sentences</d
   '<p class="l">Each question is a sentence with a blank (or two). Pick the word that the sentence itself proves right. The clue is always in the sentence: a restatement after a colon, a contrast word like "instead" or "although", or a "so… that" cause.</p>' +
   '<p class="l">After you answer, the card shows the right answer and the clue that gave it away. Questions you miss come back first next time.</p>' +
   '<p class="l">Some questions are built from your own vocab words: the example sentence with the word blanked out, plus three other words of the same kind.</p>' +
+  '<p class="l">When the clock runs out, one of the day\'s four 10-minute reviews is ticked off on Match day. Stopping early doesn\'t count.</p>' +
   '<button class="btn quiet" type="button">Close</button>');
 function familyLink() { return location.origin + location.pathname + "?code=" + encodeURIComponent(code); }
 function newCode() { const a = "abcdefghjkmnpqrstuvwxyz23456789"; let c = ""; for (let i = 0; i < 16; i++) c += a[Math.floor(Math.random() * a.length)]; return c.replace(/(.{4})(?=.)/g, "$1-"); }
