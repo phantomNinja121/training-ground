@@ -62,6 +62,19 @@
   .pitch.scored .ball { transform: translate(330px, -6px); }
   .pitch.scored .net { transform: scaleX(1.12); }
   .pitch .steps { font-size: 12px; color: var(--dark-gray); text-align: center; margin-top: 6px; }
+  /* mini pitch inside a flashcard session: tug-of-war between the blue player and the red one */
+  .mini { margin: 0 0 10px; }
+  .mini .player, .mini .ball { transition: transform .45s cubic-bezier(.3,1.1,.4,1); }
+  .mini .net { transform-box: view-box; transform-origin: 330px 65px; }
+  .mini .netL { transform-box: view-box; transform-origin: 10px 65px; }
+  .mini.shootR .ball { animation: shot .6s cubic-bezier(.2,.8,.3,1) forwards; }
+  .mini.shootR .net { animation: bulge .5s ease .4s both; }
+  .mini.shootL .ball { animation: shotL .6s cubic-bezier(.2,.8,.3,1) forwards; }
+  @keyframes shotL { 50% { transform: translate(22px, -14px); } to { transform: translate(10px, -6px); } }
+  .mini.shootL .netL { animation: bulge .5s ease .4s both; }
+  .mini .goaltxt { opacity: 0; }
+  .mini.shootR .goaltxt, .mini.shootL .goaltxt { animation: goaltxt 1.8s ease both; }
+  .mini .steps { margin-top: 4px; }
   /* weekly match on the season tab */
   .scoreline { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .scoreline .team { flex: 1; font-weight: 600; font-size: 14px; }
@@ -400,12 +413,38 @@
       <div class="deck"><div class="due"><b id="dkDue">0</b><span>due</span></div><div class="learn"><b id="dkLearn">0</b><span>learning</span></div><div class="new"><b id="dkNew">0</b><span>new today</span></div><div><b id="dkKnown">0</b><span>mastered</span></div></div>
       <div class="card">
         <h3>10-minute review <button class="info" id="vInfo" type="button" aria-label="How it works">i</button></h3>
-        <div class="btnrow"><button class="btn" id="vStart" type="button">Start the clock</button><button class="btn quiet" id="vTrouble" type="button">Trouble words only</button></div>
+        <div class="btnrow"><button class="btn" id="vFocus" type="button">Start the clock</button><button class="btn quiet" id="vStart" type="button">Let the app choose</button><button class="btn quiet" id="vTrouble" type="button">Trouble words only</button></div>
       </div>
-      <div class="card"><h3>Groups <span class="r">tap one for its list</span></h3><div id="groups"></div></div>
+      <div class="card"><h3>Groups <span class="r">tap one to see it or start on it</span></h3><div id="groups"></div></div>
     </div>
     <div id="vocabSession" class="hidden">
       <div class="timerbar"><div class="t" id="vClock">10:00</div><div class="n" id="vCount"></div></div>
+      <div class="pitch mini" id="vPitch">
+        <svg viewBox="0 0 340 130" aria-hidden="true">
+          <rect width="340" height="130" rx="16" fill="#52B495"/>
+          <g fill="none" stroke="#FFFFFF" stroke-width="2" opacity=".9">
+            <rect x="10" y="10" width="320" height="110" rx="4"/>
+            <line x1="170" y1="10" x2="170" y2="120"/><circle cx="170" cy="65" r="18"/>
+            <rect x="10" y="30" width="40" height="70"/><rect x="290" y="30" width="40" height="70"/>
+            <rect x="10" y="48" width="18" height="34"/><rect x="290" y="48" width="18" height="34"/>
+          </g>
+          <g class="netL"><rect x="6" y="47" width="8" height="36" fill="#FFFFFF" opacity=".95"/><g stroke="#B4BEC0" stroke-width="1"><line x1="9" y1="47" x2="9" y2="83"/><line x1="12" y1="47" x2="12" y2="83"/><line x1="6" y1="56" x2="14" y2="56"/><line x1="6" y1="65" x2="14" y2="65"/><line x1="6" y1="74" x2="14" y2="74"/></g></g>
+          <g class="net"><rect x="326" y="47" width="8" height="36" fill="#FFFFFF" opacity=".95"/><g stroke="#B4BEC0" stroke-width="1"><line x1="328" y1="47" x2="328" y2="83"/><line x1="331" y1="47" x2="331" y2="83"/><line x1="326" y1="56" x2="334" y2="56"/><line x1="326" y1="65" x2="334" y2="65"/><line x1="326" y1="74" x2="334" y2="74"/></g></g>
+          <g class="player" id="vRed">
+            <circle cx="0" cy="48" r="7" fill="#F3B0A0"/>
+            <path d="M-7 56h14l3 16h-4l-2-9h-8l-2 9h-4z" fill="#D1755C"/>
+            <path d="M-4 72l-2 12h4l2-10zM4 72l2 12h-4l-2-10z" fill="#2C3436"/>
+          </g>
+          <g class="player" id="vBlue">
+            <circle cx="0" cy="48" r="7" fill="#F3B0A0"/>
+            <path d="M-7 56h14l3 16h-4l-2-9h-8l-2 9h-4z" fill="#4081DB"/>
+            <path d="M-4 72l-2 12h4l2-10zM4 72l2 12h-4l-2-10z" fill="#2C3436"/>
+          </g>
+          <g class="ball" id="vBall"><circle cx="0" cy="84" r="5" fill="#FFFFFF" stroke="#2C3436" stroke-width="1.5"/><path d="M-2 84l2-2 2 2-2 2z" fill="#2C3436"/></g>
+          <g class="goaltxt"><rect x="110" y="14" width="120" height="30" rx="15" fill="#FFFFFF"/><text x="170" y="35" text-anchor="middle" font-size="16" font-weight="800" fill="#52B495" id="vGoalTxt">GOAL!</text></g>
+        </svg>
+        <div class="steps" id="vPitchSteps"></div>
+      </div>
       <div class="flash" id="flash"></div>
       <div class="daynav"><button id="vQuit" type="button">Stop early (doesn't count)</button></div>
     </div>
@@ -530,7 +569,7 @@
 /* ============================================================
    1. VERSION + CONFIG — the Firebase config is read from config.js (see SETUP.md), never pasted here.
    ============================================================ */
-const APP_VERSION = "2026-09-20.1";
+const APP_VERSION = "2026-09-26.4";
 const firebaseConfig = window.firebaseConfig || null;
 // The family code is the password: it's the Firestore record name, it's never written into this file, and it only travels in the link you share.
 const mem = {};
@@ -3487,7 +3526,7 @@ function dayProgress(d) {
   p.forEach(t => { const n = t.count || 1; total += n; done += Math.min(n, Number(e[t.id] || 0)); });
   return { done, total, full: done === total, any: done > 0 };
 }
-function basePoints(d) { const p = planFor(d), e = entry(d); return p.reduce((s, t) => s + t.pts * Math.min(t.count || 1, Number(e[t.id] || 0)), 0) ; }
+function basePoints(d) { const p = planFor(d), e = entry(d); return p.reduce((s, t) => s + t.pts * Math.min(t.count || 1, Number(e[t.id] || 0)), 0) + GOAL_XP * Number(e.g || 0); }
 function formBand(f) { let b = FORM_BANDS[0]; FORM_BANDS.forEach(x => { if (f >= x.min) b = x; }); return b; }
 function mult(form) { return 1 + form / 200; }
 // Walks every day of the season. Form is judged at the end of each day; today's sessions use the form the day started with.
@@ -3593,7 +3632,8 @@ function deck() {
   const master = D.items.filter(w => mastered(cards[w.w]));
   return { due, learn, fresh, known, master, newLeft: Math.max(0, perDay - introduced) };
 }
-// Next card: overdue reviews first, then learning cards whose step timer has passed, then new words (within today's quota), then waiting learning cards.
+// Next card: see the numbered steps in nextCard(). NEW_SHARE = 4 means at least one card in four is a new word (until today's quota is met) and at least one in four is a due review (while any are due).
+const NEW_SHARE = 4;
 function nextTrouble(seen) {
   const now = Date.now(), cards = vcards(), tw = troubleWords();
   const ready = tw.filter(w => cards[w.w].st !== "review" && cards[w.w].due <= now).sort((a, b) => cards[a.w].due - cards[b.w].due);
@@ -3610,14 +3650,39 @@ function nextGroup(g, seen) {
   const unseen = ws.filter(w => !seen.has(w.w)); if (unseen.length) return { w: unseen[0], kind: cards[unseen[0].w] ? (cards[unseen[0].w].st === "review" ? "due" : "learn") : "new" };
   seen.clear(); if (vs) toast("Going round again"); const w = ws[0]; seen.add(w.w); return { w, kind: cards[w.w] ? "due" : "new" };
 }
+/* Focus mode (vocab only): he picks a group. Each word in it once, in order, with its 1- and 4-minute returns as they come due.
+   When nothing in the group is waiting, older words come in: due reviews first (most overdue), then trouble words, then unseen words from earlier groups.
+   Graded like a cram session: a word that already has a schedule keeps it on a right answer; a miss always counts. */
+function nextFocus(g, seen) {
+  const now = Date.now(), cards = vcards(), byDue = (a, b) => cards[a.w].due - cards[b.w].due, ws = D.items.filter(w => w.g === g);
+  const ready = ws.filter(w => cards[w.w] && cards[w.w].st !== "review" && cards[w.w].due <= now).sort(byDue); if (ready.length) return { w: ready[0], kind: "learn" };
+  const unseen = ws.filter(w => !seen.has(w.w));
+  if (unseen.length) { const w = unseen[0], c = cards[w.w]; return { w, kind: !c ? "new" : c.st !== "review" ? "learn" : c.due <= now ? "due" : "ahead" }; }
+  if (vs && !vs.fillNoted) { vs.fillNoted = true; toast("Group seen once · older words coming in"); }
+  const others = D.items.filter(w => w.g !== g && cards[w.w] && !seen.has(w.w));
+  const due = others.filter(w => cards[w.w].st === "review" && cards[w.w].due <= now).sort(byDue); if (due.length) return { w: due[0], kind: "due" };
+  const tw = others.filter(w => trouble(cards[w.w])).sort((a, b) => (cards[b.w].lapses || 0) - (cards[a.w].lapses || 0)); if (tw.length) return { w: tw[0], kind: "trouble" };
+  const gi = D.groups.indexOf(g), earlier = D.items.filter(w => D.groups.indexOf(w.g) < gi && !cards[w.w]); if (earlier.length) return { w: earlier[0], kind: "new" };
+  const waiting = ws.filter(w => cards[w.w] && cards[w.w].st !== "review").sort(byDue); if (waiting.length) return { w: waiting[0], kind: "learn" };
+  seen.clear(); if (vs) toast("Going round again"); const w = ws[0]; seen.add(w.w); return { w, kind: cards[w.w] ? "ahead" : "new" };
+}
 function nextCard() {
+  if (vs && vs.mode === "focus") return nextFocus(vs.group, vs.seenSet);
   if (vs && vs.mode === "group") return nextGroup(vs.group, vs.seenSet);
   if (vs && vs.mode === "trouble") return nextTrouble(vs.seenSet);
   const now = Date.now(), d = deck();
-  if (d.due.length) return { w: d.due[0], kind: "due" };
+  // 1. New words get a guaranteed share of every session (one card in NEW_SHARE while today's quota lasts).
+  //    Without this, the learning and review piles eat the whole ten minutes and the next group never arrives. fresh keeps file order, so one group finishes before the next begins.
+  if (d.fresh.length && d.newLeft > 0 && vs && (vs.newSeen || 0) * NEW_SHARE <= vs.seen) return { w: d.fresh[0], kind: "new" };
+  // 2. Due reviews get the same guaranteed share, most overdue first, so learning cards can't crowd them out either.
+  const dueSorted = d.due.slice().sort((a, b) => vcards()[a.w].due - vcards()[b.w].due);
+  if (dueSorted.length && vs && (vs.dueSeen || 0) * NEW_SHARE <= vs.seen) return { w: dueSorted[0], kind: "due" };
+  // 3. A learning card whose short timer has passed, so a word he just met comes back a minute or so later.
   const ready = d.learn.filter(w => vcards()[w.w].due <= now).sort((a, b) => vcards()[a.w].due - vcards()[b.w].due);
   if (ready.length) return { w: ready[0], kind: "learn" };
-  if (d.fresh.length && d.newLeft > 0) return { w: d.fresh[0], kind: "new" }; // fresh keeps file order, so one group finishes before the next begins
+  // 4. Any other due review.
+  if (dueSorted.length) return { w: dueSorted[0], kind: "due" };
+  if (d.fresh.length && d.newLeft > 0) return { w: d.fresh[0], kind: "new" };
   // Today's quota is done: pull the next batch of new cards rather than stop. Announce it once.
   if (d.fresh.length) { if (vs && !vs.batchNoted) { vs.batchNoted = true; toast("New batch · " + d.fresh[0].g); } return { w: d.fresh[0], kind: "new" }; }
   // Nothing new left: serve the soonest learning card early rather than sit idle.
@@ -3860,6 +3925,9 @@ function render() {
   const sq = shootSquad(), tot = shootTotals();
   $("soKgoals").textContent = tot.g; $("soKshots").textContent = tot.s; $("soKwon").textContent = tot.won; $("soKlost").textContent = tot.lost;
   $("soSub").textContent = "You're given the definition. You spell the word.";
+  const fg = focusGroup();
+  $("vFocus").classList.toggle("hidden", D.id !== "vocab" || !fg); $("vFocus").textContent = fg ? (data.vocabFocus === fg ? "Continue · " : "Start · ") + fg.split(" · ")[0] : "";
+  $("vStart").className = "btn" + (D.id === "vocab" ? " quiet" : ""); $("vStart").textContent = D.id === "vocab" ? "Let the app choose" : "Start the clock";
   const twl = troubleWords();
   $("vTrouble").textContent = "Trouble " + D.unit + " only" + (twl.length ? " · " + twl.length : ""); $("vTrouble").disabled = !twl.length; $("vTrouble").style.opacity = twl.length ? "1" : ".5";
   $("vocabTitle").textContent = D.name;
@@ -3924,7 +3992,8 @@ const CONF = ["var(--yellow)", "var(--green)", "var(--light-blue)", "var(--light
 function confetti(n) { let h = ""; for (let i = 0; i < n; i++) h += '<i class="conf" style="left:' + (4 + Math.random() * 92) + '%;background:' + CONF[i % CONF.length] + ';animation-delay:' + (Math.random() * .6) + 's;animation-duration:' + (1.3 + Math.random() * .8) + 's"></i>'; return h; }
 let popNext = null;
 function openPop(cls, html) { const p = $("pop"); p.className = "pop show " + cls; $("popBox").innerHTML = html;
-  const old = p.querySelector(".sunburst"); if (old) old.remove(); if (cls === "levelup") p.insertBefore(Object.assign(document.createElement("div"), { className: "sunburst" }), $("popBox")); const b = $("popBox").querySelector(".btn"); if (b) { b.onclick = closePop; setTimeout(() => b.focus(), 50); } if (navigator.vibrate) navigator.vibrate([40, 60, 40]); }
+  const old = p.querySelector(".sunburst"); if (old) old.remove(); if (cls === "levelup") p.insertBefore(Object.assign(document.createElement("div"), { className: "sunburst" }), $("popBox")); // Every button in a pop closes it unless the caller wires it to something else afterwards; focus lands on the first one.
+  const bs = $("popBox").querySelectorAll(".btn"); bs.forEach(b => b.onclick = closePop); if (bs[0]) setTimeout(() => bs[0].focus(), 50); if (navigator.vibrate) navigator.vibrate([40, 60, 40]); }
 function closePop() { $("pop").className = "pop"; const n = popNext; popNext = null; if (n) n(); }
 function runQueue(q) { const step = q.shift(); if (!step) return; step(); popNext = q.length ? () => runQueue(q) : null; }
 function popFullTime(d, s) {
@@ -3954,8 +4023,10 @@ function popGroup(g) {
   openPop("wordlist",
     '<div class="kicker">' + ws.length + ' words</div><div class="title">' + g + '</div>' +
     '<div class="wl">' + ws.map(w => '<div><i class="' + cls(w) + '"></i><div><b>' + w.w + '</b> <span>' + w.def + '</span></div>' + ((cards[w.w] || {}).lapses >= 2 ? '<small>missed ' + cards[w.w].lapses + '×</small>' : '') + '</div>').join("") + '</div>' +
-    (lsGet("tg_dev") === "on" ? '<button class="btn" id="practiceGroup" type="button" style="width:100%;justify-content:center">Practice this group</button>' : '') +
+    (D.id === "vocab" ? '<button class="btn" id="focusGroup" type="button" style="width:100%;justify-content:center">Start the clock on this group</button>' : '') +
+    (lsGet("tg_dev") === "on" ? '<button class="btn quiet" id="practiceGroup" type="button" style="width:100%;justify-content:center">Practice this group (no clock)</button>' : '') +
     '<button class="btn quiet" type="button">Close</button>');
+  const fb = $("focusGroup"); if (fb) fb.onclick = () => { closePop(); data.vocabFocus = g; vStart("focus", g); };
   const pb = $("practiceGroup"); if (pb) pb.onclick = () => { closePop(); vStart("group", g); };
 }
 function popMedal(name, s, c, M, V, ST) {
@@ -4011,7 +4082,8 @@ $("resetBtn").onclick = async () => {
 let vs = null; // { endAt, seen, right, card, shown, timer }
 function vStart(mode, group) {
   if (so) soStop();
-  vs = { mode: mode || "normal", group: group || null, endAt: Date.now() + VOCAB.sessionMin * MIN, seen: 0, right: 0, card: null, shown: false, seenSet: new Set(), batchNoted: false };
+  vs = { mode: mode || "normal", group: group || null, endAt: Date.now() + VOCAB.sessionMin * MIN, seen: 0, right: 0, card: null, shown: false, seenSet: new Set(), batchNoted: false, run: 0, us: 0, them: 0 };
+  drawMini(0);
   $("vClock").classList.toggle("hidden", mode === "group"); $("vQuit").textContent = mode === "group" ? "Done practicing" : "Stop early (doesn't count)";
   $("vocabHome").classList.add("hidden"); $("vocabSession").classList.remove("hidden");
   vs.timer = setInterval(vTick, 250); vNext(); vTick();
@@ -4030,10 +4102,32 @@ function sessionDone(label) {
   else if (after < BONUS_EXTRAS) toast("Extra session banked · " + after + " of " + BONUS_EXTRAS + " toward a bonus shot");
   else toast("Extra session banked · bonus shot already scored this week");
 }
+/* Mini pitch. The ball starts on the centre spot. "Got it" moves it one step toward the right-hand goal, "Missed it" one step toward the left, "Hard" leaves it.
+   RUN_TO_SHOOT net steps either way is a goal, then back to the centre. Goals are stored per day in log[d].g (his) and log[d].gx (theirs). */
+const RUN_TO_SHOOT = 5, GOAL_XP = 3, MINI_X0 = 44, MINI_X1 = 296, MINI_MID = 170;
+function drawMini(run) {
+  const bx = MINI_MID + (MINI_X1 - MINI_MID) / RUN_TO_SHOOT * run; // run is -5..5
+  $("vBall").style.transform = "translate(" + bx + "px,0)";
+  $("vBlue").style.transform = "translate(" + (bx - 12) + "px,0)";
+  $("vRed").style.transform = "translate(" + (bx + 12) + "px,0)";
+  const ahead = run > 0, n = RUN_TO_SHOOT - Math.abs(run);
+  $("vPitchSteps").textContent = (data.name || "You") + " " + vs.us + " – " + vs.them + " · " + (run === 0 ? "kick-off" : ahead ? n + " more right to shoot" : n + " more miss" + (n === 1 ? "" : "es") + " and they score");
+}
+function miniKick(g) {
+  if (g === 1) return;
+  vs.run += g === 2 ? 1 : -1;
+  if (Math.abs(vs.run) < RUN_TO_SHOOT) { drawMini(vs.run); return; }
+  const mine = vs.run > 0; vs.run = 0; if (mine) vs.us++; else vs.them++;
+  const t = today(); if (!data.log[t]) data.log[t] = {}; const k = mine ? "g" : "gx"; data.log[t][k] = Number(data.log[t][k] || 0) + 1;
+  const p = $("vPitch"); $("vGoalTxt").textContent = mine ? "GOAL! +" + GOAL_XP + " XP" : "They score"; $("vGoalTxt").setAttribute("fill", mine ? "#52B495" : "#D1755C");
+  drawMini(mine ? RUN_TO_SHOOT - 1 : 1 - RUN_TO_SHOOT); $("vPitchSteps").textContent = (data.name || "You") + " " + vs.us + " – " + vs.them + (mine ? " · back to the centre spot" : " · they score, back to the centre spot");
+  p.classList.add(mine ? "shootR" : "shootL"); if (mine) pop();
+  setTimeout(() => { p.classList.remove("shootR", "shootL"); if (vs) drawMini(0); }, 1900);
+}
 function vStop(count) {
-  clearInterval(vs.timer); const seen = vs.seen, right = vs.right; vs = null;
+  clearInterval(vs.timer); const seen = vs.seen, right = vs.right, us = vs.us, them = vs.them; vs = null;
   $("vocabSession").classList.add("hidden"); $("vocabHome").classList.remove("hidden");
-  if (count) sessionDone(seen + " cards, " + right + " right");
+  if (count) sessionDone(seen + " cards, " + right + " right" + (us + them ? " · " + us + " – " + them : ""));
   save().catch(() => {});
 }
 function vTick() {
@@ -4046,7 +4140,7 @@ function vTick() {
 function vNext() {
   const c = nextCard(); vs.card = c; vs.shown = false; const f = $("flash");
   if (!c) { f.innerHTML = '<div class="kind">Deck</div><div class="word">Nothing to show</div><p class="def">This deck has no cards yet.</p>'; return; }
-  const kindLbl = c.kind === "due" ? "Review" : c.kind === "learn" ? "Learning" : c.kind === "new" ? D.newLbl + " · " + c.w.g : c.kind === "ahead" ? "Reviewing ahead" : "Trouble · missed " + ((vcards()[c.w.w] || {}).lapses || 0) + "×";
+  const kindLbl = c.kind === "due" ? "Review" : c.kind === "learn" ? "Learning" : c.kind === "new" ? D.newLbl + " · " + c.w.g : c.kind === "ahead" ? (vs.mode === "focus" ? "Practice" : "Reviewing ahead") : "Trouble · missed " + ((vcards()[c.w.w] || {}).lapses || 0) + "×";
   f.innerHTML = '<div class="kind ' + c.kind + '">' + kindLbl + '</div><div class="word' + (c.w.w.length > 26 ? " long" : "") + '">' + c.w.w + '</div><div class="pos">' + c.w.pos + '</div><div class="spacer"></div><button class="btn" id="vShow" type="button">' + (D.id === "vocab" ? "Show meaning" : "Show answer") + '</button>';
   $("vShow").onclick = vShow;
 }
@@ -4055,16 +4149,21 @@ function vShow() {
   const btn = (g, cls, lbl) => '<button class="' + cls + '" data-g="' + g + '" type="button">' + lbl + '<small>' + ivLabel(preview(cur, g, now), now) + '</small></button>';
   $("flash").innerHTML = '<div class="kind ' + c.kind + '">' + c.w.w + ' · ' + c.w.pos + '</div><p class="def">' + c.w.def + '</p><p class="ex">' + c.w.ex + '</p><div class="spacer"></div>' +
     '<div class="grades" style="width:100%">' + btn(0, "again", "Missed it") + btn(1, "hard", "Hard") + btn(2, "good", "Got it") + '</div>';
-  document.querySelectorAll("#flash .grades button").forEach(b => b.onclick = () => { const g = +b.dataset.g; grade(c.w.w, g, vs.mode === "trouble" || vs.mode === "group" || c.kind === "ahead"); vs.seenSet.add(c.w.w); vs.seen++; if (g >= 2) vs.right++; render(); vNext(); vTick(); if (vs.seen % 5 === 0) save().catch(() => {}); });
+  document.querySelectorAll("#flash .grades button").forEach(b => b.onclick = () => { const g = +b.dataset.g; grade(c.w.w, g, vs.mode !== "normal" || c.kind === "ahead"); vs.seenSet.add(c.w.w); vs.seen++; if (c.kind === "new") vs.newSeen = (vs.newSeen || 0) + 1; if (c.kind === "due") vs.dueSeen = (vs.dueSeen || 0) + 1; if (g >= 2) vs.right++; miniKick(g); render(); vNext(); vTick(); if (vs.seen % 5 === 0) save().catch(() => {}); });
 }
 $("vInfo").onclick = () => openPop("forminfo",
   '<div class="kicker">' + D.name + '</div><div class="title">How the 10 minutes work</div>' +
-  '<p class="l">Cards you\'re due to see come first, then new ones from the current group, in order. A new card comes back at least twice in the same session before it moves to tomorrow.</p>' +
+  (D.id === "vocab" ? '<p class="l">Pick a group and start the clock. You see each word in it once, in order, and the ones you just met come back a minute or so later. Once the whole group has had a look, older words fill the rest of the time: reviews that are due, then trouble words, then words from earlier groups you skipped. You can stay on one group all day. The big button remembers your group.</p><p class="l">"Let the app choose" mixes new words, due reviews and returns on its own, at least one card in four new.</p>' :
+    '<p class="l">Every session mixes three kinds of card: new cards from the current group (in order), reviews that are due, and cards you met a few minutes ago coming back. At least one card in four is new until the day\'s quota is met, so the next group always arrives.</p>') +
+  '<p class="l">The pitch is a tug-of-war. "Got it" moves the ball one step toward the right-hand goal, "Missed it" one step toward the left, "Hard" leaves it where it is. Five steps either way is a goal, then back to the centre spot. Each goal you score is +' + GOAL_XP + ' XP. It doesn\'t touch the weekly match.</p>' +
   '<p class="l">Each card has a memory. Get it right and it comes back later: 1 day, then 3, then a week. Miss it and it comes back in a few minutes. Be honest with the buttons; that\'s what makes the spacing work.</p>' +
   '<p class="l">A card is <b>mastered</b> once it has graduated and then been "Got it" ' + MASTER_STREAK + ' more times in a row on separate days. Missing it starts that count over.</p>' +
   '<p class="l">New ' + D.unit + ' arrive one group at a time, in order. "Trouble ' + D.unit + ' only" runs just the ones missed twice or more; getting one right there doesn\'t move its schedule, missing it does.</p>' +
   '<p class="l">When the clock runs out, one of the day\'s four 10-minute reviews is ticked off on Match day. Vocab and math sessions both count. Stopping early doesn\'t.</p>' +
   '<button class="btn quiet" type="button">Close</button>');
+// The group he's working on: the one he picked last (if it still has words he hasn't mastered), else the first group with unseen words.
+function focusGroup() { if (D.id !== "vocab") return null; const cards = vcards(), g = data.vocabFocus; if (g && D.groups.includes(g) && D.items.some(w => w.g === g && !mastered(cards[w.w]))) return g; const f = D.items.find(w => !cards[w.w]); return f ? f.g : null; }
+$("vFocus").onclick = () => { const g = focusGroup(); if (!g) return; data.vocabFocus = g; vStart("focus", g); };
 $("vStart").onclick = () => vStart("normal"); $("vTrouble").onclick = () => { if (troubleWords().length) vStart("trouble"); }; $("vQuit").onclick = () => vStop(false);
 document.addEventListener("keydown", e => { if (!vs) return; if (e.key === " " && !vs.shown && $("vShow")) { e.preventDefault(); vShow(); } if (vs.shown && /^[1-3]$/.test(e.key)) { const b = document.querySelector('#flash .grades button[data-g="' + (Number(e.key) - 1) + '"]'); if (b) b.click(); } });
 
